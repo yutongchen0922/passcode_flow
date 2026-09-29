@@ -7,7 +7,8 @@ import { CODE_LENGTH, type Phase, type StatusKind } from './types';
  *
  *   editing ──submit (4/4)──▶ verifying ──accepted──▶ success
  *      ▲                          │
- *      └──── rejectionShown ◀── rejected (shake, then clear and refocus cell 1)
+ *      └──── rejectionShown ◀── rejected (red + shake, then clear right to left and
+ *                                          return to cell 1, with a hint below)
  */
 
 export type MachinePhase = 'editing' | 'verifying' | 'rejected' | 'success';
@@ -25,6 +26,13 @@ export type PasscodeState = Readonly<{
   attempt: number;
   /** Increments on a rejected keystroke or an early Enter; the UI plays a small nudge. */
   nudge: number;
+  /** Wrong codes so far. After the first, a hint with the passcode is shown. */
+  failures: number;
+  /**
+   * The code was just cleared all at once (after a rejection, or ⌥⌫). The UI clears the
+   * digits right to left while the tile sweeps back to the first cell. Ends on the next edit.
+   */
+  rewinding: boolean;
 }>;
 
 export type PasscodeAction =
@@ -49,6 +57,8 @@ export const initialState: PasscodeState = {
   showError: false,
   attempt: 0,
   nudge: 0,
+  failures: 0,
+  rewinding: false,
 };
 
 export function isComplete(digits: readonly string[]): boolean {
@@ -90,6 +100,7 @@ export function passcodeReducer(state: PasscodeState, action: PasscodeAction): P
         focusIndex: Math.min(start + written.length, LAST_INDEX),
         engaged: true,
         showError: false,
+        rewinding: false,
       };
     }
 
@@ -99,15 +110,15 @@ export function passcodeReducer(state: PasscodeState, action: PasscodeAction): P
       if (state.digits[index]) {
         const digits = [...state.digits];
         digits[index] = '';
-        return { ...state, digits, focusIndex: index, engaged: true };
+        return { ...state, digits, focusIndex: index, engaged: true, rewinding: false };
       }
       // Already empty: step back without clearing, so held Backspace alternates clear / move.
-      return { ...state, focusIndex: Math.max(index - 1, 0), engaged: true };
+      return { ...state, focusIndex: Math.max(index - 1, 0), engaged: true, rewinding: false };
     }
 
     case 'clear':
       if (state.phase !== 'editing') return state;
-      return { ...state, digits: EMPTY_DIGITS, focusIndex: 0, engaged: true };
+      return { ...state, digits: EMPTY_DIGITS, focusIndex: 0, engaged: true, rewinding: true };
 
     case 'focus':
       return {
@@ -118,7 +129,12 @@ export function passcodeReducer(state: PasscodeState, action: PasscodeAction): P
 
     case 'move':
       if (state.phase !== 'editing') return state;
-      return { ...state, engaged: true, focusIndex: clampFocus(state.digits, action.index) };
+      return {
+        ...state,
+        engaged: true,
+        focusIndex: clampFocus(state.digits, action.index),
+        rewinding: false,
+      };
 
     case 'blur':
       return { ...state, engaged: false };
@@ -137,11 +153,20 @@ export function passcodeReducer(state: PasscodeState, action: PasscodeAction): P
 
     case 'verified':
       if (state.phase !== 'verifying' || action.attempt !== state.attempt) return state;
-      return { ...state, phase: action.accepted ? 'success' : 'rejected' };
+      return action.accepted
+        ? { ...state, phase: 'success' }
+        : { ...state, phase: 'rejected', failures: state.failures + 1 };
 
     case 'rejectionShown':
       if (state.phase !== 'rejected') return state;
-      return { ...state, phase: 'editing', digits: EMPTY_DIGITS, focusIndex: 0, showError: true };
+      return {
+        ...state,
+        phase: 'editing',
+        digits: EMPTY_DIGITS,
+        focusIndex: 0,
+        showError: true,
+        rewinding: true,
+      };
   }
 }
 
@@ -153,6 +178,9 @@ export type PasscodeView = {
   tileIndex: number;
   tileVisible: boolean;
   nudge: number;
+  rewinding: boolean;
+  /** "Hint: the passcode is 1234", after the first wrong code. */
+  hintVisible: boolean;
 };
 
 /** What the screen renders for a given state. */
@@ -172,5 +200,7 @@ export function selectView(state: PasscodeState): PasscodeView {
     tileIndex: state.focusIndex,
     tileVisible: state.phase === 'editing' && state.engaged,
     nudge: state.nudge,
+    rewinding: state.rewinding,
+    hintVisible: state.failures > 0,
   };
 }

@@ -28,7 +28,7 @@
   transition: transform var(--dur-slide) var(--ease-out);
 }
 
-.field {
+.entry {
   transition:
     opacity var(--dur-tone) var(--ease-out),
     scale var(--dur-tone) var(--ease-out);
@@ -42,7 +42,7 @@
   transform: translateY(calc(var(--status-gap) + var(--cell-height) / 2 + var(--icon-size) / 2));
 }
 
-.screen[data-phase='success'] .field {
+.screen[data-phase='success'] .entry {
   opacity: 0;
   scale: 0.98;
   visibility: hidden;
@@ -52,13 +52,39 @@
     visibility 0s linear var(--dur-tone);
 }
 
+/*
+ * Not in Figma: shown after a wrong code, mirroring the status row's 16px gap above the
+ * field. Positioned against the stage, and fades away with the field on success.
+ */
+.hint {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + var(--status-gap));
+  margin: 0;
+  color: var(--text-color-2);
+  font: var(--font-weight-medium) var(--text-hint-size) / normal var(--font-sans);
+  text-align: center;
+  transition:
+    opacity var(--dur-tone) var(--ease-out),
+    translate var(--dur-tone) var(--ease-out);
+}
+
+.hint[data-visible='false'] {
+  opacity: 0;
+  translate: 0 -4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* No glide: the row moves while its old message is faded out, then the new one fades in. */
   .status {
     transition: transform 0s linear var(--dur-fade);
   }
 
-  .screen[data-phase='success'] .field {
+  .screen[data-phase='success'] .entry {
     scale: none;
+  }
+
+  .hint[data-visible='false'] {
+    translate: none;
   }
 }

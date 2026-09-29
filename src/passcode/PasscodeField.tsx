@@ -10,6 +10,8 @@ type PasscodeFieldProps = {
   tileVisible: boolean;
   /** Changes on a rejected keystroke or early Enter; each change plays a small wiggle. */
   nudge: number;
+  /** The code was just cleared at once: digits clear right to left, the tile sweeps back. */
+  rewinding: boolean;
   tone: CellTone;
   getInputProps: (index: number) => CellInputProps;
   onBlur?: FocusEventHandler<HTMLDivElement>;
@@ -20,19 +22,34 @@ export function PasscodeField({
   tileIndex,
   tileVisible,
   nudge,
+  rewinding,
   tone,
   getInputProps,
   onBlur,
 }: PasscodeFieldProps) {
   return (
-    <div className={styles.field} role="group" aria-label="Passcode" onBlur={onBlur}>
+    <div
+      className={styles.field}
+      role="group"
+      aria-label="Passcode"
+      data-tone={tone}
+      onBlur={onBlur}
+    >
       {digits.map((digit, index) => (
-        <DigitCell key={index} index={index} digit={digit} tone={tone} inputProps={getInputProps(index)} />
+        <DigitCell
+          key={index}
+          index={index}
+          digit={digit}
+          tone={tone}
+          rewinding={rewinding}
+          inputProps={getInputProps(index)}
+        />
       ))}
       <div
         className={styles.tile}
         data-index={tileIndex}
         data-visible={tileVisible}
+        data-rewind={rewinding || undefined}
         // Alternating between two identical animations restarts the wiggle on every nudge.
         data-nudge={nudge === 0 ? undefined : nudge % 2 ? 'odd' : 'even'}
         aria-hidden="true"

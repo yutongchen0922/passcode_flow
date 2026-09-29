@@ -7,6 +7,7 @@ type PreviewState = {
   digits: readonly string[];
   /** Cell the tile is shown on, or `null` for no tile. */
   activeIndex: number | null;
+  hintVisible?: boolean;
 };
 
 /**
@@ -20,7 +21,15 @@ export const PREVIEW_STATES = {
   authenticated: { phase: 'success', status: 'success', digits: ['1', '2', '3', '4'], activeIndex: null },
   'tile-first': { phase: 'editing', status: null, digits: ['', '', '', ''], activeIndex: 0 },
   'tile-last': { phase: 'editing', status: null, digits: ['1', '2', '3', '4'], activeIndex: 3 },
-  error: { phase: 'editing', status: 'error', digits: ['', '', '', ''], activeIndex: 0 },
+  // Wrong code: red and shaking, then cleared and back on cell 1 with the hint below.
+  error: { phase: 'error', status: 'error', digits: ['5', '5', '5', '5'], activeIndex: null, hintVisible: true },
+  'error-cleared': {
+    phase: 'editing',
+    status: 'error',
+    digits: ['', '', '', ''],
+    activeIndex: 0,
+    hintVisible: true,
+  },
 } satisfies Record<string, PreviewState>;
 
 export type PreviewName = keyof typeof PREVIEW_STATES;

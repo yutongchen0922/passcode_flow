@@ -111,6 +111,24 @@ describe('submission', () => {
     const typing = run([{ type: 'input', index: 0, text: '5' }], cleared);
     expect(selectView(typing).status).toBeNull();
   });
+
+  it('shows the hint only after a wrong code, and keeps it', () => {
+    expect(selectView(typed('1234')).hintVisible).toBe(false);
+    const rejected = run(
+      [{ type: 'submit' }, { type: 'verified', attempt: 1, accepted: false }, { type: 'rejectionShown' }],
+      typed('1111'),
+    );
+    expect(selectView(rejected).hintVisible).toBe(true);
+    expect(selectView(run([{ type: 'input', index: 0, text: '1' }], rejected)).hintVisible).toBe(true);
+  });
+
+  it('rewinds on a clear-all until the next edit', () => {
+    const cleared = run([{ type: 'clear' }], typed('12'));
+    expect(cleared).toMatchObject({ rewinding: true, digits: ['', '', '', ''], focusIndex: 0 });
+    // Focus alone (the tile arriving on cell 1) doesn't end it; typing does.
+    expect(run([{ type: 'focus', index: 0 }], cleared).rewinding).toBe(true);
+    expect(run([{ type: 'input', index: 0, text: '3' }], cleared).rewinding).toBe(false);
+  });
 });
 
 describe('selectView', () => {

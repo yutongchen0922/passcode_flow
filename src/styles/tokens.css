@@ -17,13 +17,15 @@
   --text-color-disabled: #858585;
 
   /* 2. Colour — not in Figma */
-  --danger: #b42318;
+  --danger: #b42318; /* error state: cell strokes */
+  --text-color-2: #767676; /* hint; #858585 is only 3.7:1 on white, this is the AA minimum */
 
   /* 3. Type */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-weight-medium: 500;
   --text-digit-size: 36px;
   --text-status-size: 24px;
+  --text-hint-size: 16px; /* not in Figma */
 
   /* 4. Geometry */
   --cell-width: 84px;
@@ -58,6 +60,11 @@
   --dur-pop: calc(320ms * var(--motion-scale)); /* status icon popping in */
   --delay-pop: calc(230ms * var(--motion-scale)); /* after the fade-out, so the pop lands ~380ms */
   --dur-spin: calc(1s * var(--motion-scale)); /* one spinner revolution */
+  --dur-shake: calc(420ms * var(--motion-scale)); /* rejected code; inside REJECTION_HOLD_MS */
+  /* Clearing the whole code: the tile sweeps back at a steady pace, one cell per stagger step,
+     and each digit fades as the tile reaches it. */
+  --stagger-rewind: calc(80ms * var(--motion-scale));
+  --dur-rewind: calc(var(--stagger-rewind) * 3);
 }
 
 :root[data-slowmo] {

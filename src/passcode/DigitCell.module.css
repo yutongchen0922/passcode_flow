@@ -23,6 +23,11 @@
   --glyph-color: var(--text-color-disabled);
 }
 
+/* Wrong code (not in Figma): the normal cell with red strokes; digits keep their colour. */
+.cell[data-tone='error'] {
+  --cell-stroke: var(--danger);
+}
+
 /*
  * Stroke drawn as an overlay rather than a border, so the cell's content box never changes
  * size and the glyph sits in the same place in every cell.
@@ -84,6 +89,28 @@
 .glyph[data-filled='false'] {
   opacity: 0;
   scale: 0.8;
+}
+
+/*
+ * Clearing the whole code: digits fade right to left as the tile sweeps back over them.
+ * Delays follow the transition list above: color, opacity, scale.
+ */
+.cell[data-rewind] .glyph {
+  --clear-delay: 0s;
+
+  transition-delay: 0s, var(--clear-delay), var(--clear-delay);
+}
+
+.cell[data-rewind][data-index='2'] .glyph {
+  --clear-delay: var(--stagger-rewind);
+}
+
+.cell[data-rewind][data-index='1'] .glyph {
+  --clear-delay: calc(var(--stagger-rewind) * 2);
+}
+
+.cell[data-rewind][data-index='0'] .glyph {
+  --clear-delay: calc(var(--stagger-rewind) * 3);
 }
 
 @keyframes glyph-in {

@@ -85,6 +85,14 @@ describe('Rules 2 & 4 · simulated verification of 1234', () => {
     expect(status()).toBe('');
   });
 
+  it('reveals the passcode below the field after a wrong attempt', async () => {
+    const { user } = setup();
+    expect(screen.queryByText(/hint/i)).toBeNull();
+    await user.keyboard('1111{Enter}');
+    await wait(VERIFY_DELAY_MS);
+    expect(screen.getByText('Hint: the passcode is 1234')).toBeInTheDocument();
+  });
+
   it('locks the cells while verifying', async () => {
     const { user, values } = setup();
     await user.keyboard('1234{Enter}{Backspace}9');

@@ -6,6 +6,8 @@ type DigitCellProps = {
   index: number;
   digit: string;
   tone: CellTone;
+  /** Part of a clear-all: the digit fades after the ones to its right. */
+  rewinding: boolean;
   inputProps: CellInputProps;
 };
 
@@ -13,11 +15,11 @@ type DigitCellProps = {
  * One cell of the passcode bar. The visible digit is a separate glyph so it can animate;
  * the input on top is transparent and only handles focus and typing.
  */
-export function DigitCell({ index, digit, tone, inputProps }: DigitCellProps) {
+export function DigitCell({ index, digit, tone, rewinding, inputProps }: DigitCellProps) {
   const glyph = useGlyph(digit);
 
   return (
-    <div className={styles.cell} data-index={index} data-tone={tone}>
+    <div className={styles.cell} data-index={index} data-tone={tone} data-rewind={rewinding || undefined}>
       <span
         // A new key per digit remounts the glyph, which replays the pop-in animation.
         key={glyph.key}
@@ -36,6 +38,7 @@ export function DigitCell({ index, digit, tone, inputProps }: DigitCellProps) {
         pattern="[0-9]*"
         autoComplete={index === 0 ? 'one-time-code' : 'off'}
         aria-label={`Digit ${index + 1} of 4`}
+        aria-invalid={tone === 'error' || undefined}
         value={digit}
       />
     </div>

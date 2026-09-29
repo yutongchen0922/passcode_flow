@@ -13,6 +13,8 @@ export function PasscodeEntry() {
       tileIndex={view.tileIndex}
       tileVisible={view.tileVisible}
       nudge={view.nudge}
+      rewinding={view.rewinding}
+      hintVisible={view.hintVisible}
       getInputProps={getInputProps}
       onFieldBlur={onFieldBlur}
       onScreenPress={onScreenPress}

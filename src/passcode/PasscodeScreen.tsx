@@ -2,6 +2,7 @@ import type { FocusEventHandler, MouseEventHandler } from 'react';
 import { PasscodeField } from './PasscodeField';
 import { StatusRow } from './StatusRow';
 import type { CellInputProps, CellTone, Phase, StatusKind } from './types';
+import { CORRECT_PASSCODE } from './verify';
 import styles from './PasscodeScreen.module.css';
 
 const TONE: Record<Phase, CellTone> = {
@@ -20,6 +21,9 @@ type PasscodeScreenProps = {
   tileIndex: number;
   tileVisible: boolean;
   nudge?: number;
+  rewinding?: boolean;
+  /** Shows the passcode below the field; for reviewers, after a wrong attempt. */
+  hintVisible?: boolean;
   /** Omitted for static previews, which render read-only cells. */
   getInputProps?: (index: number) => CellInputProps;
   onFieldBlur?: FocusEventHandler<HTMLDivElement>;
@@ -38,6 +42,8 @@ export function PasscodeScreen({
   tileIndex,
   tileVisible,
   nudge = 0,
+  rewinding = false,
+  hintVisible = false,
   getInputProps = readOnlyInput,
   onFieldBlur,
   onScreenPress,
@@ -48,16 +54,21 @@ export function PasscodeScreen({
         <div className={styles.status} role="status" aria-live="polite">
           <StatusRow status={status} />
         </div>
-        <div className={styles.field}>
+        {/* Everything that leaves on success: the field and the hint below it. */}
+        <div className={styles.entry}>
           <PasscodeField
             digits={digits}
             tileIndex={tileIndex}
             tileVisible={tileVisible}
             nudge={nudge}
+            rewinding={rewinding}
             tone={TONE[phase]}
             getInputProps={getInputProps}
             onBlur={onFieldBlur}
           />
+          <p className={styles.hint} data-visible={hintVisible} aria-live="polite">
+            {hintVisible && `Hint: the passcode is ${CORRECT_PASSCODE}`}
+          </p>
         </div>
       </div>
     </main>

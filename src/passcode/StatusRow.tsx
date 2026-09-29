@@ -11,6 +11,7 @@ const LABELS: Record<StatusKind, string> = {
   error: 'Incorrect passcode',
 };
 
+/** "Incorrect passcode" has no icon: the red field already says it. */
 const ICONS: Partial<Record<StatusKind, string>> = {
   verifying: spinnerIcon,
   success: checkSquareIcon,
@@ -21,7 +22,8 @@ type StatusRowProps = {
 };
 
 /**
- * Icon + label, as in the Figma "Verifying..." and "Authenticated" frames.
+ * Icon + label, as in the Figma "Verifying..." and "Authenticated" frames; "Incorrect
+ * passcode" is the label alone.
  *
  * When the status changes, the current message fades out first and only then is replaced,
  * so the row's width change (163px → 204px for "Authenticated") happens while nothing is
