@@ -63,62 +63,101 @@
   border-end-end-radius: var(--field-radius);
 }
 
-.glyph {
+/* The digit and its ghost (the hint) share one position, measured from Figma. */
+.glyph,
+.ghost {
   position: absolute;
   z-index: 2;
   inset-inline: 0;
   top: var(--digit-offset-top);
   translate: var(--digit-offset-x) 0;
-  color: var(--glyph-color);
   font: var(--font-weight-medium) var(--text-digit-size) / normal var(--font-sans);
   text-align: center;
   pointer-events: none;
   user-select: none;
+}
+
+.glyph {
+  color: var(--glyph-color);
   transition:
     color var(--dur-tone) var(--ease-out),
     opacity var(--dur-fade) var(--ease-in),
-    scale var(--dur-fade) var(--ease-in);
+    scale var(--dur-fade) var(--ease-in),
+    filter var(--dur-fade) var(--ease-in);
 }
 
-/* A new digit pops in. */
+/* A new digit comes into focus: a short fade up from a slight blur, no bounce. */
 .glyph[data-pop] {
-  animation: glyph-in var(--dur-digit) var(--ease-pop);
+  animation: glyph-in var(--dur-digit) var(--ease-out);
 }
 
 /* A cleared digit stays in place while it fades out. */
 .glyph[data-filled='false'] {
   opacity: 0;
-  scale: 0.8;
-}
-
-/*
- * Clearing the whole code: digits fade right to left as the tile sweeps back over them.
- * Delays follow the transition list above: color, opacity, scale.
- */
-.cell[data-rewind] .glyph {
-  --clear-delay: 0s;
-
-  transition-delay: 0s, var(--clear-delay), var(--clear-delay);
-}
-
-.cell[data-rewind][data-index='2'] .glyph {
-  --clear-delay: var(--stagger-rewind);
-}
-
-.cell[data-rewind][data-index='1'] .glyph {
-  --clear-delay: calc(var(--stagger-rewind) * 2);
-}
-
-.cell[data-rewind][data-index='0'] .glyph {
-  --clear-delay: calc(var(--stagger-rewind) * 3);
+  scale: 0.92;
+  filter: blur(calc(var(--blur-swap) / 2));
 }
 
 @keyframes glyph-in {
   from {
     opacity: 0;
-    scale: 0.6;
-    transform: translateY(6px);
+    scale: 0.92;
+    filter: blur(var(--blur-swap));
+    transform: translateY(4px);
   }
+}
+
+/*
+ * The hint after a wrong code: the passcode, faintly, in each empty cell, exactly where
+ * the real digit will land. Typing replaces it.
+ */
+.ghost {
+  color: var(--ghost-color);
+  opacity: 0;
+}
+
+/*
+ * Ghosts fade in, but vanish the instant a digit lands on them, so a typed digit never
+ * overlaps its ghost. (A transition runs with the destination state's timing.)
+ */
+.ghost[data-visible='true'] {
+  opacity: 1;
+  transition: opacity var(--dur-tone) var(--ease-out);
+}
+
+/* Held keys and fast typing: digits appear and clear without animating. */
+.cell[data-motion='instant'] .glyph,
+.cell[data-motion='instant'] .ghost {
+  transition: none;
+}
+
+/*
+ * Clearing the whole code: digits fade right to left as the tile closes back over them,
+ * and each ghost digit appears once its real digit has gone.
+ * Glyph delays follow its transition list: color, opacity, scale, filter.
+ */
+.cell[data-motion='rewind'] .glyph {
+  transition-delay: 0s, var(--clear-delay), var(--clear-delay), var(--clear-delay);
+}
+
+.cell[data-motion='rewind'] .ghost {
+  transition-delay: calc(var(--clear-delay) + var(--dur-fade));
+}
+
+.cell[data-motion='rewind'] {
+  --clear-delay: 0s;
+}
+
+.cell[data-motion='rewind'][data-index='2'] {
+  --clear-delay: var(--stagger-rewind);
+}
+
+.cell[data-motion='rewind'][data-index='1'] {
+  --clear-delay: calc(var(--stagger-rewind) * 2);
+}
+
+.cell[data-motion='rewind'][data-index='0'] {
+  --clear-delay: calc(var(--stagger-rewind) * 3);
 }
 
 .input {
@@ -158,6 +197,7 @@
 
   .glyph[data-filled='false'] {
     scale: none;
+    filter: none;
   }
 }
 

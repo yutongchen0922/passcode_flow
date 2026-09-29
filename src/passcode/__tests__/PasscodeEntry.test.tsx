@@ -102,12 +102,21 @@ describe('Rules 2 & 4 · simulated verification of 1234', () => {
     expect(status()).toBe('Authenticated');
   });
 
-  it('reveals the passcode below the field after a wrong attempt', async () => {
+  it('hints the passcode as ghost digits in the empty cells after a wrong attempt', async () => {
     const { user } = setup();
-    expect(screen.queryByText(/hint/i)).toBeNull();
+    const ghosts = () =>
+      [...document.querySelectorAll('[data-visible="true"]')].map((el) => el.textContent);
+    expect(ghosts()).toEqual([]);
+
     await user.keyboard('1111{Enter}');
     await wait(VERIFY_DELAY_MS);
+    await wait(ERROR_HOLD_MS);
+    expect(ghosts()).toEqual(['1', '2', '3', '4']);
+    // Screen readers get the same hint as text.
     expect(screen.getByText('Hint: the passcode is 1234')).toBeInTheDocument();
+
+    await user.keyboard('1');
+    expect(ghosts()).toEqual(['2', '3', '4']);
   });
 
   it('locks the cells while verifying', async () => {
@@ -200,6 +209,16 @@ describe('Rule 9 · holding Backspace', () => {
     expect(values()).toEqual(['', '', '', '']);
     expect(focused()).toBe(0);
   });
+
+  it('skips the animations while the key is held, and restores them on release', async () => {
+    const { user } = setup();
+    const motion = () => document.querySelector('[data-mode]')?.getAttribute('data-motion');
+    await user.keyboard('123');
+    await user.keyboard('{Backspace>3}');
+    expect(motion()).toBe('instant');
+    await user.keyboard('{/Backspace}');
+    expect(motion()).toBe('default');
+  });
 });
 
 describe('Focus', () => {
@@ -213,12 +232,12 @@ describe('Focus', () => {
 
   it('activates the field on a click anywhere on the page', async () => {
     const { user, values, focused } = setup();
-    const tile = () => document.querySelector('[data-visible]')?.getAttribute('data-visible');
-    expect(tile()).toBe('false');
+    const tile = () => document.querySelector('[data-mode]')?.getAttribute('data-mode');
+    expect(tile()).toBe('hidden');
 
     await user.click(screen.getByRole('main'));
     expect(focused()).toBe(0);
-    expect(tile()).toBe('true');
+    expect(tile()).toBe('active');
 
     await user.keyboard('4');
     expect(values()).toEqual(['4', '', '', '']);

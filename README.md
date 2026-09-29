@@ -30,11 +30,11 @@ Open <http://localhost:5173> and start typing. You can also click anywhere on th
 ### Things to try
 
 - **`1234`**: "Verifying..." for 2 seconds, then "Authenticated". Reload to start again.
-- **Any other code**: the field turns red and shakes, then clears, and a hint shows the passcode.
+- **Any other code**: the field turns red and shakes, then clears, and the passcode appears as faint ghost digits to type over.
 - **`?slowmo`**, e.g. `localhost:5173/?slowmo`: every transition at 1/5 speed.
 - **`?preview=<state>`**: static screens.
   - Figma frames: `empty`, `filling`, `verifying`, `authenticated`
-  - States Figma doesn't show: `tile-first`, `tile-last`, `error`, `error-cleared`
+  - States Figma doesn't show: `tile-first`, `tile-last`, `error`, `error-cleared`, `error-retyping`
 
 ## The brief, rule by rule
 
@@ -64,14 +64,19 @@ stateDiagram-v2
     Success --> [*]
 ```
 
-| Moment         | What you see                                                                                                                                                                                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Page load      | Exactly the Figma empty frame, with no tile. The first click or keystroke brings in the green tile.                                                                                                                                                                            |
-| Typing         | The digit pops in (180 ms). The tile glides to the next cell (140 ms), rounding its corners on the end cells.                                                                                                                                                                  |
-| Code complete  | A 350 ms pause on the full code, so the last digit is seen. Then the tile fades, the cells turn grey and "Verifying..." rises in.                                                                                                                                              |
-| Success        | "Verifying..." and the field fade out while the message glides 96 px down to the centre. "Authenticated" fades in and the check pops as it lands.                                                                                                                              |
-| Wrong code     | The frame turns red and the field shakes once. "Incorrect passcode" appears and the hint fades in below. After 700 ms the tile sweeps back to cell 1 and each digit fades as it passes. Typing during those 700 ms starts the next attempt at once, so no keystrokes are lost. |
-| Reduced motion | Fades only: no glides, pops or shakes.                                                                                                                                                                                                                                         |
+| Moment | What you see |
+| --- | --- |
+| Page load | Exactly the Figma empty frame, with no tile. The first click or keystroke brings in the green tile. |
+| Typing | The digit comes into focus: a quick fade up from a slight blur, with no bounce. The tile glides to the next cell (140 ms), rounding its corners on the end cells. |
+| Fast typing, held keys | No animation: when keys arrive under 120 ms apart or auto-repeat, the tile and digits update instantly, so they never trail behind your fingers. |
+| Code complete | A 350 ms pause on the full code, so the last digit is seen. Then the tile opens out to wrap the whole code ("checking all of it") and fades as the cells turn grey and "Verifying..." rises in. |
+| Verifying | The spinner breathes: its eight spokes draw in towards the centre and back out while it turns slowly. |
+| Success | The spinner exhales, its spokes drawing into a point. The field recedes into a soft blur while the message glides 96 px down to the centre on a spring. "Authenticated" comes into focus, the box blooms out of the point where the spokes met, and the tick draws in. |
+| Wrong code | The frame turns red and the field shakes once, and "Incorrect passcode" appears. After 700 ms the tile closes back onto cell 1, each digit fading as its edge passes, and the passcode appears in the empty cells as faint ghost digits. Typing during those 700 ms starts the next attempt at once, so no keystrokes are lost. |
+| Reduced motion | Fades only: no glides, pops, shakes, wrap, breathing or bloom. The spinner still turns. |
+
+Text swaps blur slightly as they crossfade (the status message and digits), which hides the
+letterforms changing.
 
 ### Decisions
 
@@ -84,11 +89,11 @@ stateDiagram-v2
 - **Focus never skips ahead.** Clicking past the first empty cell lands on the first empty cell.
   - The field is a single Tab stop.
   - Arrow keys, Home and End move between cells.
-  - ⌥⌫ / ⌘⌫ clears the whole code, with the same sweep as the error.
+  - ⌥⌫ / ⌘⌫ clears the whole code, with the same closing motion as the error.
 - **The error state and hint aren't in Figma.**
   - They reuse the existing tokens plus one red, `#b42318`, on the cell strokes only.
-  - The hint shows only after a wrong code, so the four Figma states stay untouched.
-  - The hint grey is `#767676`. Figma's `#858585` is only 3.7:1 on white, below the WCAG AA minimum for 16 px text.
+  - The hint is the passcode as ghost digits (`#c2c2c2`) in the empty cells, exactly where each digit will land. It needs no extra line of text, and typing simply replaces it.
+  - It shows only after a wrong code, so the four Figma states stay untouched. Screen readers get it as a sentence.
 - **Status messages fade before they swap.** "Verifying..." and "Authenticated" rows differ in width by 41 px. Swapping only while nothing is visible means nothing is seen to jump sideways.
 
 ## Pixel fidelity
@@ -129,13 +134,14 @@ src/
     input.ts               Key → action mapping, digit cleaning
     verify.ts              Mock verification: 2 s, accepts 1234
     config.ts              Interaction timings (auto-submit pause, error hold, …)
+    types.ts               Shared types, including PasscodeView: everything the screen renders
     PasscodeEntry.tsx      The live screen: usePasscode + PasscodeScreen
-    PasscodeScreen.tsx     Layout: status row, field, hint, success layout
+    PasscodeScreen.tsx     Layout: status row and field, success layout
     PasscodeField.tsx      The four-cell bar and the moving tile
-    DigitCell.tsx          One cell: transparent input + animated digit
+    DigitCell.tsx          One cell: transparent input, animated digit, ghost hint digit
     StatusRow.tsx          Icon + label, fading out before swapping
     *.module.css           One stylesheet per component; states via data-* attributes
-    icons/                 Spinner and check, exported from Figma (Phosphor icons)
+    icons.tsx              Spinner and check drawn inline with Figma's geometry, so parts animate
     __tests__/             Machine, key mapping, and one test per rule
   preview/Preview.tsx      Static screens for ?preview= and the pixel diff
 scripts/pixel-diff.mjs     Figma comparison
@@ -144,7 +150,7 @@ design/figma/              Figma frame exports used by the pixel diff
 
 - **`machine.ts` is plain logic.** It has no React, DOM or timers, so every rule is a plain function you can test.
 - **Components only render.** They set `data-*` attributes and the CSS handles every visual state and transition.
-- **No inline styles.** Every duration, colour and size is a token in `tokens.css`.
+- **No inline styles.** Colours, durations and measured sizes are tokens in `tokens.css`; the few animation amplitudes (shake distance, wiggle) sit next to the keyframes they tune.
 
 ## Accessibility
 
@@ -152,8 +158,8 @@ design/figma/              Figma frame exports used by the pixel diff
 - **Screen readers:**
   - The status message is announced (`aria-live`).
   - Inputs are marked `aria-invalid` on a wrong code.
-  - The hint is announced when it appears.
-- **Reduced motion** replaces glides, pops and the shake with fades.
+  - The hint is announced as a sentence when it appears; the ghost digits are visual only.
+- **Reduced motion** replaces the glides, shake, wrap, breathing and bloom with fades. The spinner still turns.
 - **Mobile:** text is 16 px or larger, so iOS doesn't zoom in on focus.
 
 ## Known limitations

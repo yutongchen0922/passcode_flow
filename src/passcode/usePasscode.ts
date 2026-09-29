@@ -3,10 +3,11 @@ import {
   useLayoutEffect,
   useReducer,
   useRef,
+  useState,
   type FocusEvent,
   type MouseEvent,
 } from 'react';
-import { AUTO_SUBMIT_DELAY_MS, ERROR_HOLD_MS } from './config';
+import { AUTO_SUBMIT_DELAY_MS, ERROR_HOLD_MS, RAPID_KEY_MS } from './config';
 import { keyToAction } from './input';
 import { initialState, isComplete, passcodeReducer, selectView } from './machine';
 import type { CellInputProps } from './types';
@@ -20,13 +21,27 @@ export function usePasscode() {
   const [state, dispatch] = useReducer(passcodeReducer, initialState);
   const { phase, digits, focusIndex, engaged } = state;
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const [instant, setInstant] = useState(false);
+  const lastKeyAt = useRef(-Infinity);
 
   function handleKey(event: KeyboardEvent, index: number) {
     const action = keyToAction(event, index);
     if (!action) return;
     event.preventDefault();
+    // Held keys and fast typing change the field without animating (see RAPID_KEY_MS).
+    // Submitting always animates.
+    const rapid = event.repeat || event.timeStamp - lastKeyAt.current < RAPID_KEY_MS;
+    lastKeyAt.current = event.timeStamp;
+    setInstant(rapid && action.type !== 'submit');
     dispatch(action);
   }
+
+  // Animations come back as soon as the keys are released.
+  useEffect(() => {
+    const onKeyUp = () => setInstant(false);
+    window.addEventListener('keyup', onKeyUp);
+    return () => window.removeEventListener('keyup', onKeyUp);
+  }, []);
 
   // Keep DOM focus on the state's focus cell. Key events flush synchronously, so this runs
   // before the next key-repeat event arrives and held Backspace never hits a stale cell.
@@ -115,5 +130,5 @@ export function usePasscode() {
     dispatch({ type: 'focus', index: focusIndex });
   }
 
-  return { view: selectView(state), getInputProps, onFieldBlur, onScreenPress };
+  return { view: selectView(state, instant), getInputProps, onFieldBlur, onScreenPress };
 }

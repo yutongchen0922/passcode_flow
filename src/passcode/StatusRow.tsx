@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import { STATUS_FADE_OUT_MS } from './config';
-import spinnerIcon from './icons/spinner.svg';
-import checkSquareIcon from './icons/check-square.svg';
+import { CheckIcon, SpinnerIcon } from './icons';
 import type { StatusKind } from './types';
 import styles from './StatusRow.module.css';
 
@@ -12,9 +11,9 @@ const LABELS: Record<StatusKind, string> = {
 };
 
 /** "Incorrect passcode" has no icon: the red field already says it. */
-const ICONS: Partial<Record<StatusKind, string>> = {
-  verifying: spinnerIcon,
-  success: checkSquareIcon,
+const ICONS: Partial<Record<StatusKind, ComponentType<{ className?: string }>>> = {
+  verifying: SpinnerIcon,
+  success: CheckIcon,
 };
 
 type StatusRowProps = {
@@ -25,9 +24,9 @@ type StatusRowProps = {
  * Icon + label, as in the Figma "Verifying..." and "Authenticated" frames; "Incorrect
  * passcode" is the label alone.
  *
- * When the status changes, the current message fades out first and only then is replaced,
- * so the row's width change (163px → 204px for "Authenticated") happens while nothing is
- * visible and neither the icon nor the text is seen to jump sideways.
+ * When the status changes, the current message leaves first (the spinner exhales, the label
+ * blurs out) and only then is replaced, so the row's width change (163px → 204px for
+ * "Authenticated") happens while nothing is visible and nothing is seen to jump sideways.
  */
 export function StatusRow({ status }: StatusRowProps) {
   const [shown, setShown] = useState(status);
@@ -41,13 +40,13 @@ export function StatusRow({ status }: StatusRowProps) {
   }, [leaving, status]);
 
   if (shown === null) return null;
-  const icon = ICONS[shown];
+  const Icon = ICONS[shown];
 
   return (
     <div className={styles.row} data-status={shown} data-leaving={leaving}>
-      {icon && (
+      {Icon && (
         <span key={`${shown}-icon`} className={styles.icon}>
-          <img src={icon} alt="" width={32} height={32} />
+          <Icon />
         </span>
       )}
       <span key={`${shown}-label`} className={styles.label}>

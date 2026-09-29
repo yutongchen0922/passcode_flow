@@ -1,17 +1,18 @@
 import type { FocusEventHandler } from 'react';
 import { DigitCell } from './DigitCell';
-import type { CellInputProps, CellTone } from './types';
+import type { CellInputProps, CellTone, Motion, TileMode } from './types';
 import styles from './PasscodeField.module.css';
 
 type PasscodeFieldProps = {
   digits: readonly string[];
+  /** Faint digits shown in empty cells (the hint), or `null` for none. */
+  ghosts: readonly string[] | null;
   /** Cell the focus tile sits on; kept while hidden so it fades out in place. */
   tileIndex: number;
-  tileVisible: boolean;
+  tile: TileMode;
+  motion: Motion;
   /** Changes on a rejected keystroke or early Enter; each change plays a small wiggle. */
   nudge: number;
-  /** The code was just cleared at once: digits clear right to left, the tile sweeps back. */
-  rewinding: boolean;
   tone: CellTone;
   getInputProps: (index: number) => CellInputProps;
   onBlur?: FocusEventHandler<HTMLDivElement>;
@@ -19,10 +20,11 @@ type PasscodeFieldProps = {
 
 export function PasscodeField({
   digits,
+  ghosts,
   tileIndex,
-  tileVisible,
+  tile,
+  motion,
   nudge,
-  rewinding,
   tone,
   getInputProps,
   onBlur,
@@ -40,16 +42,17 @@ export function PasscodeField({
           key={index}
           index={index}
           digit={digit}
+          ghost={ghosts?.[index]}
           tone={tone}
-          rewinding={rewinding}
+          motion={motion}
           inputProps={getInputProps(index)}
         />
       ))}
       <div
         className={styles.tile}
         data-index={tileIndex}
-        data-visible={tileVisible}
-        data-rewind={rewinding || undefined}
+        data-mode={tile}
+        data-motion={motion}
         // Alternating between two identical animations restarts the wiggle on every nudge.
         data-nudge={nudge === 0 ? undefined : nudge % 2 ? 'odd' : 'even'}
         aria-hidden="true"

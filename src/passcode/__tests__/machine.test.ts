@@ -135,13 +135,20 @@ describe('submission', () => {
 });
 
 describe('selectView', () => {
-  it('shows the tile only while editing with the field focused', () => {
-    expect(selectView(initialState).tileVisible).toBe(false);
-    expect(selectView(typed('1'))).toMatchObject({ tileVisible: true, tileIndex: 1 });
+  it('shows the tile while editing with the field focused, and wraps it on submit', () => {
+    expect(selectView(initialState).tile).toBe('hidden');
+    expect(selectView(typed('1'))).toMatchObject({ tile: 'active', tileIndex: 1 });
     // Hidden on blur, but stays on its cell so it fades out in place.
     expect(selectView(run([{ type: 'blur' }], typed('1')))).toMatchObject({
-      tileVisible: false,
+      tile: 'hidden',
       tileIndex: 1,
     });
+    expect(selectView(run([{ type: 'submit' }], typed('1234'))).tile).toBe('wrap');
+  });
+
+  it('animates by default, instantly for rapid keys, and rewinds on a clear-all', () => {
+    expect(selectView(typed('1')).motion).toBe('default');
+    expect(selectView(typed('1'), true).motion).toBe('instant');
+    expect(selectView(run([{ type: 'clear' }], typed('1')), true).motion).toBe('rewind');
   });
 });

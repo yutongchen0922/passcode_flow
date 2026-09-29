@@ -9,9 +9,9 @@ const BASE: PasscodeView = {
   status: null,
   digits: EMPTY,
   tileIndex: 0,
-  tileVisible: false,
+  tile: 'hidden',
+  motion: 'default',
   nudge: 0,
-  rewinding: false,
   hintVisible: false,
 };
 
@@ -21,13 +21,25 @@ const BASE: PasscodeView = {
  */
 export const PREVIEW_STATES = {
   empty: {},
-  filling: { digits: ['1', '2', '2', ''], tileIndex: 2, tileVisible: true },
-  verifying: { phase: 'verifying', status: 'verifying', digits: FULL },
-  authenticated: { phase: 'success', status: 'success', digits: FULL },
-  'tile-first': { tileVisible: true },
-  'tile-last': { digits: FULL, tileIndex: 3, tileVisible: true },
-  error: { phase: 'error', status: 'error', digits: ['5', '5', '5', '5'], hintVisible: true },
-  'error-cleared': { status: 'error', tileVisible: true, hintVisible: true },
+  filling: { digits: ['1', '2', '2', ''], tileIndex: 2, tile: 'active' },
+  verifying: { phase: 'verifying', status: 'verifying', digits: FULL, tile: 'wrap' },
+  authenticated: { phase: 'success', status: 'success', digits: FULL, tile: 'wrap' },
+  'tile-first': { tile: 'active' },
+  'tile-last': { digits: FULL, tileIndex: 3, tile: 'active' },
+  error: {
+    phase: 'error',
+    status: 'error',
+    digits: ['5', '5', '5', '5'],
+    tile: 'wrap',
+    hintVisible: true,
+  },
+  'error-cleared': { status: 'error', tile: 'active', hintVisible: true },
+  'error-retyping': {
+    digits: ['1', '2', '', ''],
+    tileIndex: 2,
+    tile: 'active',
+    hintVisible: true,
+  },
 } satisfies Record<string, Partial<PasscodeView>>;
 
 export type PreviewName = keyof typeof PREVIEW_STATES;

@@ -18,14 +18,13 @@
 
   /* 2. Colour — not in Figma */
   --danger: #b42318; /* error state: cell strokes */
-  --text-color-2: #767676; /* hint; #858585 is only 3.7:1 on white, this is the AA minimum */
+  --ghost-color: #c2c2c2; /* hint digits: clearly a placeholder next to real digits */
 
   /* 3. Type */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-weight-medium: 500;
   --text-digit-size: 36px;
   --text-status-size: 24px;
-  --text-hint-size: 16px; /* not in Figma */
 
   /* 4. Geometry */
   --cell-width: 84px;
@@ -50,18 +49,30 @@
   --motion-scale: 1;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* glides that settle softly */
   --ease-in: cubic-bezier(0.4, 0, 1, 1); /* exits */
-  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1); /* small overshoot */
+  /* Springs, as CSS linear() curves: a glide that overshoots ~4% and settles, and a livelier
+     bloom (~8%) for the check. */
+  --ease-spring: linear(0, 0.22 6%, 0.56 13%, 0.83 20%, 0.97 27%, 1.03 34%, 1.045 40%, 1.03 49%,
+      1.01 58%, 0.998 70%, 1);
+  --ease-bloom: linear(0, 0.35 8%, 0.75 18%, 1.02 30%, 1.08 38%, 1.05 50%, 1 64%, 0.995 78%, 1);
   --dur-tile: calc(140ms * var(--motion-scale)); /* tile glide; short enough for held Backspace */
-  --dur-digit: calc(180ms * var(--motion-scale)); /* digit popping in */
+  --dur-digit: calc(160ms * var(--motion-scale)); /* digit coming into focus */
   --dur-fade: calc(150ms * var(--motion-scale)); /* things leaving; = STATUS_FADE_OUT_MS */
   --dur-tone: calc(200ms * var(--motion-scale)); /* cell colour changes, status row entering */
   --dur-nudge: calc(280ms * var(--motion-scale)); /* tile wiggle on a rejected key */
-  --dur-slide: calc(450ms * var(--motion-scale)); /* status row gliding to the centre */
-  --dur-pop: calc(320ms * var(--motion-scale)); /* status icon popping in */
-  --delay-pop: calc(230ms * var(--motion-scale)); /* after the fade-out, so the pop lands ~380ms */
-  --dur-spin: calc(1s * var(--motion-scale)); /* one spinner revolution */
+  --dur-spin: calc(2.8s * var(--motion-scale)); /* one slow spinner revolution */
+  --dur-breathe: calc(1.4s * var(--motion-scale)); /* spokes drawing in and out */
+  /* Success, from the moment the result arrives: */
+  --dur-recede: calc(300ms * var(--motion-scale)); /* the field fades back and blurs */
+  --dur-slide: calc(620ms * var(--motion-scale)); /* the row glides down to the centre */
+  --dur-bloom: calc(420ms * var(--motion-scale)); /* the check box blooms… */
+  --delay-bloom: calc(80ms * var(--motion-scale)); /* …just after the spinner has exhaled */
+  --dur-tick: calc(260ms * var(--motion-scale)); /* then the tick draws in */
+  --delay-tick: calc(220ms * var(--motion-scale)); /* close behind the bloom, never an empty box for long */
   --dur-shake: calc(420ms * var(--motion-scale)); /* wrong code; inside ERROR_HOLD_MS */
-  /* Clearing the whole code: the tile sweeps back at a steady pace, one cell per stagger step,
+  --dur-wrap: calc(260ms * var(--motion-scale)); /* tile opening out around the whole code */
+  --delay-wrap-fade: calc(180ms * var(--motion-scale)); /* …before it fades away */
+  --blur-swap: 4px; /* softens text as it fades in or out */
+  /* Clearing the whole code: the tile closes back at a steady pace, one cell per stagger step,
      and each digit fades as the tile reaches it. */
   --stagger-rewind: calc(80ms * var(--motion-scale));
   --dur-rewind: calc(var(--stagger-rewind) * 3);

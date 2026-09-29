@@ -14,45 +14,90 @@
   flex: none;
   width: var(--icon-size);
   height: var(--icon-size);
-  animation: fade-in var(--dur-fade) var(--ease-out);
+  color: var(--highlight);
+  animation: blur-in var(--dur-fade) var(--ease-out);
 }
 
-.icon img {
+.icon svg {
   position: absolute;
   inset: 0;
   display: block;
-  width: 100%;
-  height: 100%;
 }
 
 .label {
   translate: 0 var(--status-label-offset-y);
-  animation: fade-in var(--dur-tone) var(--ease-out);
-}
-
-/* All eight spokes are identical, so it has to turn continuously; stepping by 45° would look frozen. */
-.row[data-status='verifying'] .icon img {
-  animation: spin var(--dur-spin) linear infinite;
+  animation: blur-in var(--dur-tone) var(--ease-out);
 }
 
 /*
- * Success: the check pops in as the row lands in the centre (~380ms after the status
- * changes; it mounts after the 150ms fade-out, hence the 230ms delay).
+ * Verifying: the spinner breathes. Its spokes draw in towards the centre and back out while
+ * the whole thing turns slowly, so waiting feels calm rather than busy.
  */
-.row[data-status='success'] .icon {
-  animation: icon-pop var(--dur-pop) var(--ease-pop) var(--delay-pop) backwards;
+.row[data-status='verifying'] svg {
+  animation: spin var(--dur-spin) linear infinite;
 }
 
-/* The outgoing message fades before it's replaced (see StatusRow.tsx). */
+.row[data-status='verifying'] line {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: breathe var(--dur-breathe) ease-in-out infinite;
+}
+
+/*
+ * The outgoing message fades before it's replaced (see StatusRow.tsx). The blur, on the way
+ * out and in, hides the letterforms changing so the swap reads as one soft transition.
+ */
 .row[data-leaving='true'] > * {
   opacity: 0;
-  transition: opacity var(--dur-fade) var(--ease-in);
+  filter: blur(var(--blur-swap));
+  transition:
+    opacity var(--dur-fade) var(--ease-in),
+    filter var(--dur-fade) var(--ease-in);
+}
+
+/*
+ * …except the spinner, which exhales: every spoke draws all the way into the centre (10px,
+ * from its midpoint at radius 10) and fades only as they meet, so they converge to a point
+ * rather than leaving a ring. A keyframe animation rather than a transition, because a
+ * transition won't start from a breathing animation that's being removed at the same time.
+ */
+.row[data-status='verifying'][data-leaving='true'] > .icon {
+  opacity: 1;
+  filter: none;
+}
+
+.row[data-status='verifying'][data-leaving='true'] line {
+  animation: exhale var(--dur-fade) var(--ease-in) forwards;
+}
+
+/*
+ * Success: the box blooms out of the point where the spokes met, landing with the row, and
+ * then the tick draws in from the left.
+ */
+.row[data-status='success'] > .icon {
+  animation: none;
+}
+
+.row[data-status='success'] svg {
+  animation: bloom var(--dur-bloom) var(--ease-bloom) var(--delay-bloom) backwards;
+}
+
+.row[data-status='success'] [data-part='tick'] {
+  animation: draw var(--dur-tick) var(--ease-out) var(--delay-tick) backwards;
 }
 
 @keyframes row-in {
   from {
     opacity: 0;
     transform: translateY(4px);
+    filter: blur(var(--blur-swap));
+  }
+}
+
+@keyframes blur-in {
+  from {
+    opacity: 0;
+    filter: blur(var(--blur-swap));
   }
 }
 
@@ -62,20 +107,44 @@
   }
 }
 
-@keyframes icon-pop {
-  from {
-    opacity: 0;
-    scale: 0.5;
+@keyframes breathe {
+  50% {
+    transform: translateY(2.5px);
+  }
+}
+
+@keyframes exhale {
+  60% {
+    opacity: 1;
   }
 
-  40% {
-    opacity: 1;
+  to {
+    transform: translateY(10px) scale(0.2);
+    opacity: 0;
   }
 }
 
 @keyframes spin {
   to {
-    transform: rotate(1turn);
+    rotate: 1turn;
+  }
+}
+
+@keyframes bloom {
+  from {
+    opacity: 0;
+    scale: 0.4;
+    filter: blur(3px);
+  }
+
+  30% {
+    opacity: 1;
+  }
+}
+
+@keyframes draw {
+  from {
+    clip-path: inset(0 100% 0 0);
   }
 }
 
@@ -84,7 +153,24 @@
     animation-name: fade-in;
   }
 
-  .row[data-status='success'] .icon {
+  /* Keeps turning (it's a progress indicator) but doesn't breathe, exhale or bloom. */
+  .row[data-status='verifying'] line {
+    animation: none;
+  }
+
+  .row[data-status='verifying'][data-leaving='true'] > .icon {
+    opacity: 0;
+  }
+
+  .row[data-status='verifying'][data-leaving='true'] line {
+    animation: none;
+  }
+
+  .row[data-status='success'] svg {
     animation: fade-in var(--dur-tone) linear;
+  }
+
+  .row[data-status='success'] [data-part='tick'] {
+    animation: none;
   }
 }

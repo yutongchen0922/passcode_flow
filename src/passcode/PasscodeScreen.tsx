@@ -14,6 +14,8 @@ const TONE: Record<Phase, CellTone> = {
 
 const readOnlyInput = (): CellInputProps => ({ readOnly: true, tabIndex: -1 });
 
+const HINT_DIGITS = [...CORRECT_PASSCODE];
+
 type PasscodeScreenProps = {
   view: PasscodeView;
   /** Omitted for static previews, which render read-only cells. */
@@ -25,7 +27,7 @@ type PasscodeScreenProps = {
 
 /**
  * Centres the passcode field in the viewport and places the status row 16px above it.
- * On success the field fades away and the row glides down to the centre.
+ * On success the field recedes and the row glides down to the centre.
  */
 export function PasscodeScreen({
   view,
@@ -39,22 +41,23 @@ export function PasscodeScreen({
         <div className={styles.status} role="status" aria-live="polite">
           <StatusRow status={view.status} />
         </div>
-        {/* Everything that leaves on success: the field and the hint below it. */}
         <div className={styles.entry}>
           <PasscodeField
             digits={view.digits}
+            ghosts={view.hintVisible ? HINT_DIGITS : null}
             tileIndex={view.tileIndex}
-            tileVisible={view.tileVisible}
+            tile={view.tile}
+            motion={view.motion}
             nudge={view.nudge}
-            rewinding={view.rewinding}
             tone={TONE[view.phase]}
             getInputProps={getInputProps}
             onBlur={onFieldBlur}
           />
-          <p className={styles.hint} data-visible={view.hintVisible} aria-live="polite">
-            {view.hintVisible && `Hint: the passcode is ${CORRECT_PASSCODE}`}
-          </p>
         </div>
+        {/* The hint is shown as ghost digits in the cells; this says it for screen readers. */}
+        <p className={styles.visuallyHidden} aria-live="polite">
+          {view.hintVisible && `Hint: the passcode is ${CORRECT_PASSCODE}`}
+        </p>
       </div>
     </main>
   );

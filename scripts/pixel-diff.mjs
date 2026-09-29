@@ -72,7 +72,7 @@ for (const state of states) {
       '--hide-scrollbars',
       '--force-device-scale-factor=1',
       `--window-size=${WIDTH},${HEIGHT}`,
-      // Lets the web font load and the spinner settle before the capture.
+      // Lets the web font load before the capture (`?still` turns all motion off).
       '--virtual-time-budget=3000',
       `--screenshot=${actualPath}`,
       `${BASE_URL}/?preview=${state}&still`,

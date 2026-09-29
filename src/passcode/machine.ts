@@ -1,5 +1,12 @@
 import { extractDigits } from './input';
-import { CODE_LENGTH, type PasscodeView, type Phase, type StatusKind } from './types';
+import {
+  CODE_LENGTH,
+  type Motion,
+  type PasscodeView,
+  type Phase,
+  type StatusKind,
+  type TileMode,
+} from './types';
 
 /**
  * Passcode state machine. Pure: no timers, no DOM. Side effects (focus, auto-submit,
@@ -8,7 +15,7 @@ import { CODE_LENGTH, type PasscodeView, type Phase, type StatusKind } from './t
  *   editing ──submit (4/4)──▶ verifying ──accepted──▶ success
  *      ▲                          │
  *      └──── dismissError ◀──── error (red frame + shake, then clear right to left and
- *                                        return to cell 1, with a hint below)
+ *                                        return to cell 1, with the passcode as ghost digits)
  */
 
 export type PasscodeState = Readonly<{
@@ -26,7 +33,7 @@ export type PasscodeState = Readonly<{
   failures: number;
   /**
    * The code was just cleared all at once (after an error, or ⌥⌫). The UI clears the
-   * digits right to left while the tile sweeps back to the first cell. Ends on the next edit.
+   * digits right to left while the tile closes back onto cell 1. Ends on the next edit.
    */
   rewinding: boolean;
 }>;
@@ -174,19 +181,24 @@ export function passcodeReducer(state: PasscodeState, action: PasscodeAction): P
   }
 }
 
-/** What the screen renders for a given state. */
-export function selectView(state: PasscodeState): PasscodeView {
-  const status: StatusKind | null =
-    state.phase === 'editing' ? (state.showError ? 'error' : null) : state.phase;
+/**
+ * What the screen renders for a given state. `instant` comes from the hook, which knows
+ * whether the latest key was held or typed in quick succession.
+ */
+export function selectView(state: PasscodeState, instant = false): PasscodeView {
+  const editing = state.phase === 'editing';
+  const status: StatusKind | null = editing ? (state.showError ? 'error' : null) : state.phase;
+  const tile: TileMode = !editing ? 'wrap' : state.engaged ? 'active' : 'hidden';
+  const motion: Motion = state.rewinding ? 'rewind' : instant ? 'instant' : 'default';
 
   return {
     phase: state.phase,
     status,
     digits: state.digits,
     tileIndex: state.focusIndex,
-    tileVisible: state.phase === 'editing' && state.engaged,
+    tile,
+    motion,
     nudge: state.nudge,
-    rewinding: state.rewinding,
     hintVisible: state.failures > 0,
   };
 }

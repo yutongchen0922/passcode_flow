@@ -31,23 +31,15 @@
   pointer-events: none;
   transition:
     translate var(--dur-tile) var(--ease-out),
+    width var(--dur-tile) var(--ease-out),
     border-radius var(--dur-tile) var(--ease-out),
     opacity var(--dur-fade) var(--ease-out),
     scale var(--dur-fade) var(--ease-out);
 }
 
-.tile[data-visible='false'] {
+.tile[data-mode='hidden'] {
   opacity: 0;
   scale: 0.96;
-}
-
-/*
- * Sweeping back to cell 1 after a clear, at a steady pace so it reaches each cell just as
- * that digit fades (see the stagger in DigitCell.module.css).
- */
-.tile[data-rewind] {
-  transition-duration: var(--dur-rewind), var(--dur-rewind), var(--dur-fade), var(--dur-fade);
-  transition-timing-function: linear, linear, var(--ease-out), var(--ease-out);
 }
 
 /* On the end cells the tile follows the field's rounded outer corners. */
@@ -75,7 +67,7 @@
  * In Figma the next cell is drawn above the focused one, so the shadow shows over the
  * previous cell but not the next. Clip the shadow where the next cell would cover it.
  */
-.tile:not([data-index='3']) {
+.tile[data-mode='active']:not([data-index='3']) {
   clip-path: polygon(
     -10px -10px,
     100% -10px,
@@ -84,6 +76,43 @@
     calc(100% + 10px) calc(100% + 10px),
     -10px calc(100% + 10px)
   );
+}
+
+/* Submitted: the tile leaves as the cells turn grey (see the wrap below). */
+.tile[data-mode='wrap'] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * …by first opening out to wrap the whole code ("now checking all of it") and only then
+   * fading. After a wrong code it closes back onto cell 1 (see rewind).
+   */
+  .tile[data-mode='wrap'] {
+    translate: 0 0;
+    width: var(--field-width);
+    border-radius: var(--field-radius);
+    transition:
+      translate var(--dur-wrap) var(--ease-out),
+      width var(--dur-wrap) var(--ease-out),
+      border-radius var(--dur-wrap) var(--ease-out),
+      opacity var(--dur-tone) var(--ease-in) var(--delay-wrap-fade);
+  }
+}
+
+/*
+ * Clearing the whole code: the tile closes back to cell 1 at a steady pace, and each digit
+ * fades as the tile's edge passes it (see the stagger in DigitCell.module.css).
+ */
+.tile[data-motion='rewind'] {
+  transition-duration: var(--dur-rewind), var(--dur-rewind), var(--dur-rewind), var(--dur-fade),
+    var(--dur-fade);
+  transition-timing-function: linear, linear, linear, var(--ease-out), var(--ease-out);
+}
+
+/* Held keys and fast typing: jump straight to the cell rather than trail behind. */
+.tile[data-motion='instant'] {
+  transition-duration: 0s, 0s, 0s, var(--dur-fade), var(--dur-fade);
 }
 
 /* "Not that": a non-digit key, or Enter before the code is complete. */
@@ -154,7 +183,7 @@
     transition: opacity var(--dur-fade) linear;
   }
 
-  .tile[data-visible='false'] {
+  .tile[data-mode='hidden'] {
     scale: none;
   }
 

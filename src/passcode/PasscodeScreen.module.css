@@ -25,7 +25,7 @@
   top: calc(-1 * (var(--status-gap) + var(--icon-size)));
   display: flex;
   justify-content: center;
-  transition: transform var(--dur-slide) var(--ease-out);
+  transition: transform var(--dur-slide) var(--ease-spring);
 }
 
 .entry {
@@ -35,8 +35,9 @@
 }
 
 /*
- * Success: the field fades away and the status row glides down to where the field's centre
- * was (Figma: y 475), so "Verifying..." visibly becomes "Authenticated".
+ * Success: the field recedes (fading back into a soft blur) while the status row glides on a
+ * spring to where the field's centre was (Figma: y 475), so "Verifying..." visibly becomes
+ * "Authenticated" rather than being replaced by it.
  */
 .screen[data-phase='success'] .status {
   transform: translateY(calc(var(--status-gap) + var(--cell-height) / 2 + var(--icon-size) / 2));
@@ -44,34 +45,23 @@
 
 .screen[data-phase='success'] .entry {
   opacity: 0;
-  scale: 0.98;
+  scale: 0.95;
+  filter: blur(6px);
   visibility: hidden;
   transition:
-    opacity var(--dur-tone) var(--ease-out),
-    scale var(--dur-tone) var(--ease-out),
-    visibility 0s linear var(--dur-tone);
+    opacity var(--dur-recede) var(--ease-out),
+    scale var(--dur-recede) var(--ease-out),
+    filter var(--dur-recede) var(--ease-out),
+    visibility 0s linear var(--dur-recede);
 }
 
-/*
- * Not in Figma: shown after a wrong code, mirroring the status row's 16px gap above the
- * field. Positioned against the stage, and fades away with the field on success.
- */
-.hint {
+.visuallyHidden {
   position: absolute;
-  inset-inline: 0;
-  top: calc(100% + var(--status-gap));
-  margin: 0;
-  color: var(--text-color-2);
-  font: var(--font-weight-medium) var(--text-hint-size) / normal var(--font-sans);
-  text-align: center;
-  transition:
-    opacity var(--dur-tone) var(--ease-out),
-    translate var(--dur-tone) var(--ease-out);
-}
-
-.hint[data-visible='false'] {
-  opacity: 0;
-  translate: 0 -4px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -82,9 +72,6 @@
 
   .screen[data-phase='success'] .entry {
     scale: none;
-  }
-
-  .hint[data-visible='false'] {
-    translate: none;
+    filter: none;
   }
 }

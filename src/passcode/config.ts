@@ -9,6 +9,12 @@ export const MOTION_SCALE = new URLSearchParams(window.location.search).has('slo
 /** Beat between the 4th digit landing and auto-submit, so the digit is seen. Enter skips it. */
 export const AUTO_SUBMIT_DELAY_MS = 350 * MOTION_SCALE;
 
+/**
+ * Keys closer together than this (or auto-repeating) skip the tile glide and digit pop, so
+ * fast typing and held Backspace never trail behind the fingers. Roughly the glide length.
+ */
+export const RAPID_KEY_MS = 120;
+
 /** Simulated verification round trip. Not motion, so `?slowmo` leaves it alone. */
 export const VERIFY_DELAY_MS = 2000;
 
