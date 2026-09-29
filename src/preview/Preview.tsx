@@ -5,6 +5,7 @@ type PreviewState = {
   phase: Phase;
   status: StatusKind | null;
   digits: readonly string[];
+  /** Cell the tile is shown on, or `null` for no tile. */
   activeIndex: number | null;
 };
 
@@ -29,6 +30,6 @@ export function isPreviewName(name: string): name is PreviewName {
 }
 
 export function Preview({ name }: { name: PreviewName }) {
-  const state: PreviewState = PREVIEW_STATES[name];
-  return <PasscodeScreen {...state} />;
+  const { activeIndex, ...state }: PreviewState = PREVIEW_STATES[name];
+  return <PasscodeScreen {...state} tileIndex={activeIndex ?? 0} tileVisible={activeIndex !== null} />;
 }

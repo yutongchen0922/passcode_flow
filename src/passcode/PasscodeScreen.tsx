@@ -17,7 +17,9 @@ type PasscodeScreenProps = {
   phase: Phase;
   status: StatusKind | null;
   digits: readonly string[];
-  activeIndex: number | null;
+  tileIndex: number;
+  tileVisible: boolean;
+  nudge?: number;
   /** Omitted for static previews, which render read-only cells. */
   getInputProps?: (index: number) => CellInputProps;
   onFieldBlur?: FocusEventHandler<HTMLDivElement>;
@@ -27,13 +29,15 @@ type PasscodeScreenProps = {
 
 /**
  * Centres the passcode field in the viewport and places the status row 16px above it.
- * On success the field fades away and the row moves down to the centre.
+ * On success the field fades away and the row glides down to the centre.
  */
 export function PasscodeScreen({
   phase,
   status,
   digits,
-  activeIndex,
+  tileIndex,
+  tileVisible,
+  nudge = 0,
   getInputProps = readOnlyInput,
   onFieldBlur,
   onScreenPress,
@@ -42,12 +46,14 @@ export function PasscodeScreen({
     <main className={styles.screen} data-phase={phase} onMouseDown={onScreenPress}>
       <div className={styles.stage}>
         <div className={styles.status} role="status" aria-live="polite">
-          {status && <StatusRow status={status} />}
+          <StatusRow status={status} />
         </div>
         <div className={styles.field}>
           <PasscodeField
             digits={digits}
-            activeIndex={activeIndex}
+            tileIndex={tileIndex}
+            tileVisible={tileVisible}
+            nudge={nudge}
             tone={TONE[phase]}
             getInputProps={getInputProps}
             onBlur={onFieldBlur}

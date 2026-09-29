@@ -10,7 +10,9 @@ export function PasscodeEntry() {
       phase={view.phase}
       status={view.status}
       digits={view.digits}
-      activeIndex={view.activeIndex}
+      tileIndex={view.tileIndex}
+      tileVisible={view.tileVisible}
+      nudge={view.nudge}
       getInputProps={getInputProps}
       onFieldBlur={onFieldBlur}
       onScreenPress={onScreenPress}

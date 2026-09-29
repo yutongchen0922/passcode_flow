@@ -149,8 +149,9 @@ export type PasscodeView = {
   phase: Phase;
   status: StatusKind | null;
   digits: readonly string[];
-  /** Cell the tile sits on, or `null` when hidden. */
-  activeIndex: number | null;
+  /** Cell the tile sits on. Kept while hidden, so the tile fades out in place. */
+  tileIndex: number;
+  tileVisible: boolean;
   nudge: number;
 };
 
@@ -168,7 +169,8 @@ export function selectView(state: PasscodeState): PasscodeView {
     phase,
     status,
     digits: state.digits,
-    activeIndex: state.phase === 'editing' && state.engaged ? state.focusIndex : null,
+    tileIndex: state.focusIndex,
+    tileVisible: state.phase === 'editing' && state.engaged,
     nudge: state.nudge,
   };
 }

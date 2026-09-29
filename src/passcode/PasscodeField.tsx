@@ -5,14 +5,25 @@ import styles from './PasscodeField.module.css';
 
 type PasscodeFieldProps = {
   digits: readonly string[];
-  /** Cell the focus tile sits on, or `null` to hide it. */
-  activeIndex: number | null;
+  /** Cell the focus tile sits on; kept while hidden so it fades out in place. */
+  tileIndex: number;
+  tileVisible: boolean;
+  /** Changes on a rejected keystroke or early Enter; each change plays a small wiggle. */
+  nudge: number;
   tone: CellTone;
   getInputProps: (index: number) => CellInputProps;
   onBlur?: FocusEventHandler<HTMLDivElement>;
 };
 
-export function PasscodeField({ digits, activeIndex, tone, getInputProps, onBlur }: PasscodeFieldProps) {
+export function PasscodeField({
+  digits,
+  tileIndex,
+  tileVisible,
+  nudge,
+  tone,
+  getInputProps,
+  onBlur,
+}: PasscodeFieldProps) {
   return (
     <div className={styles.field} role="group" aria-label="Passcode" onBlur={onBlur}>
       {digits.map((digit, index) => (
@@ -20,8 +31,10 @@ export function PasscodeField({ digits, activeIndex, tone, getInputProps, onBlur
       ))}
       <div
         className={styles.tile}
-        data-index={activeIndex ?? 0}
-        data-visible={activeIndex !== null}
+        data-index={tileIndex}
+        data-visible={tileVisible}
+        // Alternating between two identical animations restarts the wiggle on every nudge.
+        data-nudge={nudge === 0 ? undefined : nudge % 2 ? 'odd' : 'even'}
         aria-hidden="true"
       />
     </div>

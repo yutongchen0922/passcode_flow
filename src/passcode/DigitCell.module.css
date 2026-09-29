@@ -14,6 +14,7 @@
   width: var(--cell-width);
   height: var(--cell-height);
   background: var(--cell-fill);
+  transition: background-color var(--dur-tone) var(--ease-out);
 }
 
 .cell[data-tone='disabled'] {
@@ -35,6 +36,7 @@
   border-block-width: var(--stroke);
   border-radius: inherit;
   pointer-events: none;
+  transition: border-color var(--dur-tone) var(--ease-out);
 }
 
 .cell[data-index='0'] {
@@ -67,6 +69,29 @@
   text-align: center;
   pointer-events: none;
   user-select: none;
+  transition:
+    color var(--dur-tone) var(--ease-out),
+    opacity var(--dur-fade) var(--ease-in),
+    scale var(--dur-fade) var(--ease-in);
+}
+
+/* A new digit pops in. */
+.glyph[data-pop] {
+  animation: glyph-in var(--dur-digit) var(--ease-pop);
+}
+
+/* A cleared digit stays in place while it fades out. */
+.glyph[data-filled='false'] {
+  opacity: 0;
+  scale: 0.8;
+}
+
+@keyframes glyph-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+    transform: translateY(6px);
+  }
 }
 
 .input {
@@ -97,4 +122,20 @@
 
 .input::selection {
   background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph[data-pop] {
+    animation: glyph-fade-in var(--dur-digit) linear;
+  }
+
+  .glyph[data-filled='false'] {
+    scale: none;
+  }
+}
+
+@keyframes glyph-fade-in {
+  from {
+    opacity: 0;
+  }
 }

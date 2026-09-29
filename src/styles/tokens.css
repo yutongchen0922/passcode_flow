@@ -40,4 +40,26 @@
   --status-icon-gap: 8px;
   --status-gap: 16px; /* status row → field */
   --status-label-offset-y: -1px; /* Chrome rounds the label baseline 1px lower than Figma */
+
+  /*
+   * 5. Motion — not in Figma. Every duration is multiplied by --motion-scale, which `?slowmo`
+   * raises to 5 (together with the JS timings in config.ts) for reviewing transitions.
+   */
+  --motion-scale: 1;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* glides that settle softly */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1); /* exits */
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1); /* small overshoot */
+  --dur-tile: calc(140ms * var(--motion-scale)); /* tile glide; short enough for held Backspace */
+  --dur-digit: calc(180ms * var(--motion-scale)); /* digit popping in */
+  --dur-fade: calc(150ms * var(--motion-scale)); /* things leaving; = STATUS_FADE_OUT_MS */
+  --dur-tone: calc(200ms * var(--motion-scale)); /* cell colour changes, status row entering */
+  --dur-nudge: calc(280ms * var(--motion-scale)); /* tile wiggle on a rejected key */
+  --dur-slide: calc(450ms * var(--motion-scale)); /* status row gliding to the centre */
+  --dur-pop: calc(320ms * var(--motion-scale)); /* status icon popping in */
+  --delay-pop: calc(230ms * var(--motion-scale)); /* after the fade-out, so the pop lands ~380ms */
+  --dur-spin: calc(1s * var(--motion-scale)); /* one spinner revolution */
+}
+
+:root[data-slowmo] {
+  --motion-scale: 5;
 }

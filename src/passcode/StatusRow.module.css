@@ -6,6 +6,7 @@
   color: var(--text-color-1);
   font: var(--font-weight-medium) var(--text-status-size) / normal var(--font-sans);
   white-space: nowrap;
+  animation: row-in var(--dur-tone) var(--ease-out);
 }
 
 .icon {
@@ -13,6 +14,7 @@
   flex: none;
   width: var(--icon-size);
   height: var(--icon-size);
+  animation: fade-in var(--dur-fade) var(--ease-out);
 }
 
 .icon img {
@@ -23,9 +25,52 @@
   height: 100%;
 }
 
+.label {
+  translate: 0 var(--status-label-offset-y);
+  animation: fade-in var(--dur-tone) var(--ease-out);
+}
+
 /* All eight spokes are identical, so it has to turn continuously; stepping by 45° would look frozen. */
 .row[data-status='verifying'] .icon img {
-  animation: spin 1s linear infinite;
+  animation: spin var(--dur-spin) linear infinite;
+}
+
+/*
+ * Success: the check pops in as the row lands in the centre (~380ms after the status
+ * changes; it mounts after the 150ms fade-out, hence the 230ms delay).
+ */
+.row[data-status='success'] .icon {
+  animation: icon-pop var(--dur-pop) var(--ease-pop) var(--delay-pop) backwards;
+}
+
+/* The outgoing message fades before it's replaced (see StatusRow.tsx). */
+.row[data-leaving='true'] > * {
+  opacity: 0;
+  transition: opacity var(--dur-fade) var(--ease-in);
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes icon-pop {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+
+  40% {
+    opacity: 1;
+  }
 }
 
 @keyframes spin {
@@ -34,6 +79,12 @@
   }
 }
 
-.label {
-  translate: 0 var(--status-label-offset-y, 0);
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    animation-name: fade-in;
+  }
+
+  .row[data-status='success'] .icon {
+    animation: fade-in var(--dur-tone) linear;
+  }
 }

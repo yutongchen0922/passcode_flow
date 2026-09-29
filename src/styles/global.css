@@ -20,11 +20,15 @@ body {
   margin: 0;
 }
 
-/* `?still` (used by scripts/pixel-diff.mjs) freezes motion so screenshots are deterministic. */
+/*
+ * `?still` (used by scripts/pixel-diff.mjs) turns motion off so screenshots are deterministic.
+ * Every animation here starts from a hidden state and ends at the element's normal style, so
+ * with animations off each screen renders in its final, Figma-matching state.
+ */
 :root[data-still] *,
 :root[data-still] *::before,
 :root[data-still] *::after {
-  animation-play-state: paused !important;
+  animation: none !important;
   transition: none !important;
 }
 

@@ -115,8 +115,9 @@ describe('submission', () => {
 
 describe('selectView', () => {
   it('shows the tile only while editing with the field focused', () => {
-    expect(selectView(initialState).activeIndex).toBeNull();
-    expect(selectView(typed('1')).activeIndex).toBe(1);
-    expect(selectView(run([{ type: 'blur' }], typed('1'))).activeIndex).toBeNull();
+    expect(selectView(initialState).tileVisible).toBe(false);
+    expect(selectView(typed('1'))).toMatchObject({ tileVisible: true, tileIndex: 1 });
+    // Hidden on blur, but stays on its cell so it fades out in place.
+    expect(selectView(run([{ type: 'blur' }], typed('1')))).toMatchObject({ tileVisible: false, tileIndex: 1 });
   });
 });

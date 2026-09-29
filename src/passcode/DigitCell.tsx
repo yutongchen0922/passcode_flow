@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CellInputProps, CellTone } from './types';
 import styles from './DigitCell.module.css';
 
@@ -13,10 +14,19 @@ type DigitCellProps = {
  * the input on top is transparent and only handles focus and typing.
  */
 export function DigitCell({ index, digit, tone, inputProps }: DigitCellProps) {
+  const glyph = useGlyph(digit);
+
   return (
     <div className={styles.cell} data-index={index} data-tone={tone}>
-      <span className={styles.glyph} aria-hidden="true">
-        {digit}
+      <span
+        // A new key per digit remounts the glyph, which replays the pop-in animation.
+        key={glyph.key}
+        className={styles.glyph}
+        data-filled={glyph.filled}
+        data-pop={glyph.key > 0 || undefined}
+        aria-hidden="true"
+      >
+        {glyph.text}
       </span>
       <input
         {...inputProps}
@@ -30,4 +40,21 @@ export function DigitCell({ index, digit, tone, inputProps }: DigitCellProps) {
       />
     </div>
   );
+}
+
+/**
+ * What the glyph shows. A cleared digit stays in the DOM (unfilled) so it can fade out, and
+ * each newly typed digit gets a fresh key so it pops in. Digits present on first render
+ * (key 0) appear without animation.
+ */
+function useGlyph(digit: string) {
+  const [glyph, setGlyph] = useState({ text: digit, filled: digit !== '', key: 0 });
+
+  if (digit && (!glyph.filled || digit !== glyph.text)) {
+    setGlyph({ text: digit, filled: true, key: glyph.key + 1 });
+  } else if (!digit && glyph.filled) {
+    setGlyph({ ...glyph, filled: false });
+  }
+
+  return glyph;
 }

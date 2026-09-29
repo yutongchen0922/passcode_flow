@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AUTO_SUBMIT_DELAY_MS, REJECTION_HOLD_MS, VERIFY_DELAY_MS } from '../config';
+import { AUTO_SUBMIT_DELAY_MS, REJECTION_HOLD_MS, STATUS_FADE_OUT_MS, VERIFY_DELAY_MS } from '../config';
 import { PasscodeEntry } from '../PasscodeEntry';
 
 /**
@@ -22,6 +22,8 @@ function setup() {
   };
 }
 
+// Each call is its own act(), so updates (and the timers their effects start) are applied
+// before the next wait.
 const wait = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
 
 afterEach(() => {
@@ -59,7 +61,9 @@ describe('Rules 2 & 4 · simulated verification of 1234', () => {
     await wait(VERIFY_DELAY_MS - 1);
     expect(status()).toBe('Verifying...');
 
+    // The result arrives; "Verifying..." fades out before "Authenticated" replaces it.
     await wait(1);
+    await wait(STATUS_FADE_OUT_MS);
     expect(status()).toBe('Authenticated');
   });
 
@@ -67,15 +71,17 @@ describe('Rules 2 & 4 · simulated verification of 1234', () => {
     const { user, status, values, focused } = setup();
     await user.keyboard('1111{Enter}');
     await wait(VERIFY_DELAY_MS);
+    await wait(STATUS_FADE_OUT_MS);
     expect(status()).toBe('Incorrect passcode');
     expect(values()).toEqual(['1', '1', '1', '1']);
 
-    await wait(REJECTION_HOLD_MS);
+    await wait(REJECTION_HOLD_MS - STATUS_FADE_OUT_MS);
     expect(values()).toEqual(['', '', '', '']);
     expect(focused()).toBe(0);
     expect(status()).toBe('Incorrect passcode');
 
     await user.keyboard('5');
+    await wait(STATUS_FADE_OUT_MS);
     expect(status()).toBe('');
   });
 

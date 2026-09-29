@@ -7,7 +7,8 @@
 
 /*
  * The focus tile: one element that moves between cells rather than a style on each cell,
- * so it can glide from one to the next.
+ * so it can glide from one to the next. Position uses `translate`, appearing uses `scale`
+ * and the nudge uses `transform`, so the three never fight over one property.
  */
 .tile {
   --tile-index: 0;
@@ -20,14 +21,24 @@
   height: var(--cell-height);
   border: var(--tile-stroke) solid var(--highlight);
   border-radius: var(--tile-radius);
-  background: var(--fill);
+  /*
+   * No fill: the 3px border already covers the dividers beneath, and letting the cell's own
+   * fill show through keeps colour changes (grey while verifying) in step under the tile.
+   */
+  background: transparent;
   box-shadow: var(--tile-shadow);
-  transform: translateX(calc(var(--cell-width) * var(--tile-index)));
+  translate: calc(var(--cell-width) * var(--tile-index)) 0;
   pointer-events: none;
+  transition:
+    translate var(--dur-tile) var(--ease-out),
+    border-radius var(--dur-tile) var(--ease-out),
+    opacity var(--dur-fade) var(--ease-out),
+    scale var(--dur-fade) var(--ease-out);
 }
 
 .tile[data-visible='false'] {
   opacity: 0;
+  scale: 0.96;
 }
 
 /* On the end cells the tile follows the field's rounded outer corners. */
@@ -64,4 +75,39 @@
     calc(100% + 10px) calc(100% + 10px),
     -10px calc(100% + 10px)
   );
+}
+
+/* "Not that": a non-digit key, or Enter before the code is complete. */
+.tile[data-nudge='odd'] {
+  animation: nudge-odd var(--dur-nudge) var(--ease-out);
+}
+
+.tile[data-nudge='even'] {
+  animation: nudge-even var(--dur-nudge) var(--ease-out);
+}
+
+@keyframes nudge-odd {
+  20% { transform: translateX(-3px); }
+  45% { transform: translateX(3px); }
+  70% { transform: translateX(-1.5px); }
+}
+
+@keyframes nudge-even {
+  20% { transform: translateX(-3px); }
+  45% { transform: translateX(3px); }
+  70% { transform: translateX(-1.5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    transition: opacity var(--dur-fade) linear;
+  }
+
+  .tile[data-visible='false'] {
+    scale: none;
+  }
+
+  .tile[data-nudge] {
+    animation: none;
+  }
 }

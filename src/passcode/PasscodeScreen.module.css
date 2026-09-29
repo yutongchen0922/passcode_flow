@@ -25,14 +25,40 @@
   top: calc(-1 * (var(--status-gap) + var(--icon-size)));
   display: flex;
   justify-content: center;
+  transition: transform var(--dur-slide) var(--ease-out);
 }
 
-/* Success: the field is gone and the row sits at the field's vertical centre (Figma: y 475). */
+.field {
+  transition:
+    opacity var(--dur-tone) var(--ease-out),
+    scale var(--dur-tone) var(--ease-out);
+}
+
+/*
+ * Success: the field fades away and the status row glides down to where the field's centre
+ * was (Figma: y 475), so "Verifying..." visibly becomes "Authenticated".
+ */
 .screen[data-phase='success'] .status {
   transform: translateY(calc(var(--status-gap) + var(--cell-height) / 2 + var(--icon-size) / 2));
 }
 
 .screen[data-phase='success'] .field {
   opacity: 0;
+  scale: 0.98;
   visibility: hidden;
+  transition:
+    opacity var(--dur-tone) var(--ease-out),
+    scale var(--dur-tone) var(--ease-out),
+    visibility 0s linear var(--dur-tone);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No glide: the row moves while its old message is faded out, then the new one fades in. */
+  .status {
+    transition: transform 0s linear var(--dur-fade);
+  }
+
+  .screen[data-phase='success'] .field {
+    scale: none;
+  }
 }
