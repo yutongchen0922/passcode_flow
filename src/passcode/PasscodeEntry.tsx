@@ -7,14 +7,7 @@ export function PasscodeEntry() {
 
   return (
     <PasscodeScreen
-      phase={view.phase}
-      status={view.status}
-      digits={view.digits}
-      tileIndex={view.tileIndex}
-      tileVisible={view.tileVisible}
-      nudge={view.nudge}
-      rewinding={view.rewinding}
-      hintVisible={view.hintVisible}
+      view={view}
       getInputProps={getInputProps}
       onFieldBlur={onFieldBlur}
       onScreenPress={onScreenPress}

@@ -13,6 +13,9 @@ const run = (actions: PasscodeAction[], from: PasscodeState = initialState) =>
 const typed = (code: string) =>
   run([...code].map((digit, index) => ({ type: 'input', index, text: digit }) as const));
 
+/** A wrong code, still on screen. */
+const wrong = () => run([{ type: 'submit' }, { type: 'verified', accepted: false }], typed('1111'));
+
 describe('input', () => {
   it('fills the cell and advances focus, staying on the last cell', () => {
     const state = typed('1234');
@@ -79,14 +82,11 @@ describe('submission', () => {
   it('goes verifying → success when accepted', () => {
     const verifying = run([{ type: 'submit' }], typed('1234'));
     expect(verifying.phase).toBe('verifying');
-    const done = run([{ type: 'verified', attempt: verifying.attempt, accepted: true }], verifying);
-    expect(done.phase).toBe('success');
+    expect(run([{ type: 'verified', accepted: true }], verifying).phase).toBe('success');
   });
 
-  it('ignores a result from an earlier attempt', () => {
-    const verifying = run([{ type: 'submit' }], typed('1234'));
-    const stale = run([{ type: 'verified', attempt: verifying.attempt - 1, accepted: true }], verifying);
-    expect(stale.phase).toBe('verifying');
+  it('ignores a verification result outside verifying', () => {
+    expect(run([{ type: 'verified', accepted: true }], typed('1234')).phase).toBe('editing');
   });
 
   it('locks input while verifying', () => {
@@ -94,17 +94,10 @@ describe('submission', () => {
     expect(run([{ type: 'erase', index: 3 }], verifying).digits).toEqual(verifying.digits);
   });
 
-  it('after a rejection, clears the code, refocuses cell 1 and keeps the error until typing', () => {
-    const rejected = run(
-      [
-        { type: 'submit' },
-        { type: 'verified', attempt: 1, accepted: false },
-      ],
-      typed('1111'),
-    );
-    expect(selectView(rejected)).toMatchObject({ phase: 'error', status: 'error' });
+  it('after a wrong code, clears it, refocuses cell 1 and keeps the error until typing', () => {
+    expect(selectView(wrong())).toMatchObject({ phase: 'error', status: 'error' });
 
-    const cleared = run([{ type: 'rejectionShown' }], rejected);
+    const cleared = run([{ type: 'dismissError' }], wrong());
     expect(cleared).toMatchObject({ phase: 'editing', digits: ['', '', '', ''], focusIndex: 0 });
     expect(selectView(cleared).status).toBe('error');
 
@@ -112,14 +105,24 @@ describe('submission', () => {
     expect(selectView(typing).status).toBeNull();
   });
 
+  it('lets typing over a wrong code start the next attempt immediately', () => {
+    const typing = run([{ type: 'input', index: 3, text: '1' }], wrong());
+    expect(typing).toMatchObject({ phase: 'editing', digits: ['1', '', '', ''], focusIndex: 1 });
+    expect(run([{ type: 'erase', index: 3 }], wrong())).toMatchObject({
+      phase: 'editing',
+      digits: ['', '', '', ''],
+    });
+    expect(run([{ type: 'submit' }], wrong()).phase).toBe('error');
+  });
+
   it('shows the hint only after a wrong code, and keeps it', () => {
     expect(selectView(typed('1234')).hintVisible).toBe(false);
-    const rejected = run(
-      [{ type: 'submit' }, { type: 'verified', attempt: 1, accepted: false }, { type: 'rejectionShown' }],
-      typed('1111'),
+    expect(selectView(wrong()).hintVisible).toBe(true);
+    const retyping = run(
+      [{ type: 'dismissError' }, { type: 'input', index: 0, text: '1' }],
+      wrong(),
     );
-    expect(selectView(rejected).hintVisible).toBe(true);
-    expect(selectView(run([{ type: 'input', index: 0, text: '1' }], rejected)).hintVisible).toBe(true);
+    expect(selectView(retyping).hintVisible).toBe(true);
   });
 
   it('rewinds on a clear-all until the next edit', () => {
@@ -136,6 +139,9 @@ describe('selectView', () => {
     expect(selectView(initialState).tileVisible).toBe(false);
     expect(selectView(typed('1'))).toMatchObject({ tileVisible: true, tileIndex: 1 });
     // Hidden on blur, but stays on its cell so it fades out in place.
-    expect(selectView(run([{ type: 'blur' }], typed('1')))).toMatchObject({ tileVisible: false, tileIndex: 1 });
+    expect(selectView(run([{ type: 'blur' }], typed('1')))).toMatchObject({
+      tileVisible: false,
+      tileIndex: 1,
+    });
   });
 });

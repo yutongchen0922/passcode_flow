@@ -43,7 +43,6 @@
   animation: icon-pop var(--dur-pop) var(--ease-pop) var(--delay-pop) backwards;
 }
 
-
 /* The outgoing message fades before it's replaced (see StatusRow.tsx). */
 .row[data-leaving='true'] > * {
   opacity: 0;

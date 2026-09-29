@@ -1,6 +1,11 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AUTO_SUBMIT_DELAY_MS, REJECTION_HOLD_MS, STATUS_FADE_OUT_MS, VERIFY_DELAY_MS } from '../config';
+import {
+  AUTO_SUBMIT_DELAY_MS,
+  ERROR_HOLD_MS,
+  STATUS_FADE_OUT_MS,
+  VERIFY_DELAY_MS,
+} from '../config';
 import { PasscodeEntry } from '../PasscodeEntry';
 
 /**
@@ -75,7 +80,7 @@ describe('Rules 2 & 4 · simulated verification of 1234', () => {
     expect(status()).toBe('Incorrect passcode');
     expect(values()).toEqual(['1', '1', '1', '1']);
 
-    await wait(REJECTION_HOLD_MS - STATUS_FADE_OUT_MS);
+    await wait(ERROR_HOLD_MS - STATUS_FADE_OUT_MS);
     expect(values()).toEqual(['', '', '', '']);
     expect(focused()).toBe(0);
     expect(status()).toBe('Incorrect passcode');
@@ -83,6 +88,18 @@ describe('Rules 2 & 4 · simulated verification of 1234', () => {
     await user.keyboard('5');
     await wait(STATUS_FADE_OUT_MS);
     expect(status()).toBe('');
+  });
+
+  it('accepts the next code straight away, even while the wrong one is still shown', async () => {
+    const { user, values, status } = setup();
+    await user.keyboard('1111{Enter}');
+    await wait(VERIFY_DELAY_MS);
+    await user.keyboard('1234');
+    expect(values()).toEqual(['1', '2', '3', '4']);
+    await user.keyboard('{Enter}');
+    await wait(VERIFY_DELAY_MS);
+    await wait(STATUS_FADE_OUT_MS);
+    expect(status()).toBe('Authenticated');
   });
 
   it('reveals the passcode below the field after a wrong attempt', async () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { CellInputProps, CellTone } from './types';
+import { CODE_LENGTH, type CellInputProps, type CellTone } from './types';
 import styles from './DigitCell.module.css';
 
 type DigitCellProps = {
@@ -19,7 +19,12 @@ export function DigitCell({ index, digit, tone, rewinding, inputProps }: DigitCe
   const glyph = useGlyph(digit);
 
   return (
-    <div className={styles.cell} data-index={index} data-tone={tone} data-rewind={rewinding || undefined}>
+    <div
+      className={styles.cell}
+      data-index={index}
+      data-tone={tone}
+      data-rewind={rewinding || undefined}
+    >
       <span
         // A new key per digit remounts the glyph, which replays the pop-in animation.
         key={glyph.key}
@@ -37,7 +42,7 @@ export function DigitCell({ index, digit, tone, rewinding, inputProps }: DigitCe
         inputMode="numeric"
         pattern="[0-9]*"
         autoComplete={index === 0 ? 'one-time-code' : 'off'}
-        aria-label={`Digit ${index + 1} of 4`}
+        aria-label={`Digit ${index + 1} of ${CODE_LENGTH}`}
         aria-invalid={tone === 'error' || undefined}
         value={digit}
       />

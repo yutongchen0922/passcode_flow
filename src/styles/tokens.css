@@ -60,7 +60,7 @@
   --dur-pop: calc(320ms * var(--motion-scale)); /* status icon popping in */
   --delay-pop: calc(230ms * var(--motion-scale)); /* after the fade-out, so the pop lands ~380ms */
   --dur-spin: calc(1s * var(--motion-scale)); /* one spinner revolution */
-  --dur-shake: calc(420ms * var(--motion-scale)); /* rejected code; inside REJECTION_HOLD_MS */
+  --dur-shake: calc(420ms * var(--motion-scale)); /* wrong code; inside ERROR_HOLD_MS */
   /* Clearing the whole code: the tile sweeps back at a steady pace, one cell per stagger step,
      and each digit fades as the tile reaches it. */
   --stagger-rewind: calc(80ms * var(--motion-scale));

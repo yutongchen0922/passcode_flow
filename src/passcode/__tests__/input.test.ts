@@ -1,6 +1,9 @@
 import { extractDigits, keyToAction } from '../input';
 
-const key = (value: string, modifiers: Partial<Record<'metaKey' | 'ctrlKey' | 'altKey', boolean>> = {}) => ({
+const key = (
+  value: string,
+  modifiers: Partial<Record<'metaKey' | 'ctrlKey' | 'altKey', boolean>> = {},
+) => ({
   key: value,
   metaKey: false,
   ctrlKey: false,

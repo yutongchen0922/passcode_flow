@@ -1,7 +1,7 @@
 import type { FocusEventHandler, MouseEventHandler } from 'react';
 import { PasscodeField } from './PasscodeField';
 import { StatusRow } from './StatusRow';
-import type { CellInputProps, CellTone, Phase, StatusKind } from './types';
+import type { CellInputProps, CellTone, PasscodeView, Phase } from './types';
 import { CORRECT_PASSCODE } from './verify';
 import styles from './PasscodeScreen.module.css';
 
@@ -15,15 +15,7 @@ const TONE: Record<Phase, CellTone> = {
 const readOnlyInput = (): CellInputProps => ({ readOnly: true, tabIndex: -1 });
 
 type PasscodeScreenProps = {
-  phase: Phase;
-  status: StatusKind | null;
-  digits: readonly string[];
-  tileIndex: number;
-  tileVisible: boolean;
-  nudge?: number;
-  rewinding?: boolean;
-  /** Shows the passcode below the field; for reviewers, after a wrong attempt. */
-  hintVisible?: boolean;
+  view: PasscodeView;
   /** Omitted for static previews, which render read-only cells. */
   getInputProps?: (index: number) => CellInputProps;
   onFieldBlur?: FocusEventHandler<HTMLDivElement>;
@@ -36,38 +28,31 @@ type PasscodeScreenProps = {
  * On success the field fades away and the row glides down to the centre.
  */
 export function PasscodeScreen({
-  phase,
-  status,
-  digits,
-  tileIndex,
-  tileVisible,
-  nudge = 0,
-  rewinding = false,
-  hintVisible = false,
+  view,
   getInputProps = readOnlyInput,
   onFieldBlur,
   onScreenPress,
 }: PasscodeScreenProps) {
   return (
-    <main className={styles.screen} data-phase={phase} onMouseDown={onScreenPress}>
+    <main className={styles.screen} data-phase={view.phase} onMouseDown={onScreenPress}>
       <div className={styles.stage}>
         <div className={styles.status} role="status" aria-live="polite">
-          <StatusRow status={status} />
+          <StatusRow status={view.status} />
         </div>
         {/* Everything that leaves on success: the field and the hint below it. */}
         <div className={styles.entry}>
           <PasscodeField
-            digits={digits}
-            tileIndex={tileIndex}
-            tileVisible={tileVisible}
-            nudge={nudge}
-            rewinding={rewinding}
-            tone={TONE[phase]}
+            digits={view.digits}
+            tileIndex={view.tileIndex}
+            tileVisible={view.tileVisible}
+            nudge={view.nudge}
+            rewinding={view.rewinding}
+            tone={TONE[view.phase]}
             getInputProps={getInputProps}
             onBlur={onFieldBlur}
           />
-          <p className={styles.hint} data-visible={hintVisible} aria-live="polite">
-            {hintVisible && `Hint: the passcode is ${CORRECT_PASSCODE}`}
+          <p className={styles.hint} data-visible={view.hintVisible} aria-live="polite">
+            {view.hintVisible && `Hint: the passcode is ${CORRECT_PASSCODE}`}
           </p>
         </div>
       </div>

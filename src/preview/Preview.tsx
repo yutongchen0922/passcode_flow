@@ -1,13 +1,18 @@
 import { PasscodeScreen } from '../passcode/PasscodeScreen';
-import type { Phase, StatusKind } from '../passcode/types';
+import type { PasscodeView } from '../passcode/types';
 
-type PreviewState = {
-  phase: Phase;
-  status: StatusKind | null;
-  digits: readonly string[];
-  /** Cell the tile is shown on, or `null` for no tile. */
-  activeIndex: number | null;
-  hintVisible?: boolean;
+const EMPTY = ['', '', '', ''];
+const FULL = ['1', '2', '3', '4'];
+
+const BASE: PasscodeView = {
+  phase: 'editing',
+  status: null,
+  digits: EMPTY,
+  tileIndex: 0,
+  tileVisible: false,
+  nudge: 0,
+  rewinding: false,
+  hintVisible: false,
 };
 
 /**
@@ -15,22 +20,15 @@ type PreviewState = {
  * frames checked by `npm run pixel-diff`; the rest are states Figma doesn't show.
  */
 export const PREVIEW_STATES = {
-  empty: { phase: 'editing', status: null, digits: ['', '', '', ''], activeIndex: null },
-  filling: { phase: 'editing', status: null, digits: ['1', '2', '2', ''], activeIndex: 2 },
-  verifying: { phase: 'verifying', status: 'verifying', digits: ['1', '2', '3', '4'], activeIndex: null },
-  authenticated: { phase: 'success', status: 'success', digits: ['1', '2', '3', '4'], activeIndex: null },
-  'tile-first': { phase: 'editing', status: null, digits: ['', '', '', ''], activeIndex: 0 },
-  'tile-last': { phase: 'editing', status: null, digits: ['1', '2', '3', '4'], activeIndex: 3 },
-  // Wrong code: red and shaking, then cleared and back on cell 1 with the hint below.
-  error: { phase: 'error', status: 'error', digits: ['5', '5', '5', '5'], activeIndex: null, hintVisible: true },
-  'error-cleared': {
-    phase: 'editing',
-    status: 'error',
-    digits: ['', '', '', ''],
-    activeIndex: 0,
-    hintVisible: true,
-  },
-} satisfies Record<string, PreviewState>;
+  empty: {},
+  filling: { digits: ['1', '2', '2', ''], tileIndex: 2, tileVisible: true },
+  verifying: { phase: 'verifying', status: 'verifying', digits: FULL },
+  authenticated: { phase: 'success', status: 'success', digits: FULL },
+  'tile-first': { tileVisible: true },
+  'tile-last': { digits: FULL, tileIndex: 3, tileVisible: true },
+  error: { phase: 'error', status: 'error', digits: ['5', '5', '5', '5'], hintVisible: true },
+  'error-cleared': { status: 'error', tileVisible: true, hintVisible: true },
+} satisfies Record<string, Partial<PasscodeView>>;
 
 export type PreviewName = keyof typeof PREVIEW_STATES;
 
@@ -39,6 +37,5 @@ export function isPreviewName(name: string): name is PreviewName {
 }
 
 export function Preview({ name }: { name: PreviewName }) {
-  const { activeIndex, ...state }: PreviewState = PREVIEW_STATES[name];
-  return <PasscodeScreen {...state} tileIndex={activeIndex ?? 0} tileVisible={activeIndex !== null} />;
+  return <PasscodeScreen view={{ ...BASE, ...PREVIEW_STATES[name] }} />;
 }

@@ -96,15 +96,27 @@
 }
 
 @keyframes nudge-odd {
-  20% { transform: translateX(-3px); }
-  45% { transform: translateX(3px); }
-  70% { transform: translateX(-1.5px); }
+  20% {
+    transform: translateX(-3px);
+  }
+  45% {
+    transform: translateX(3px);
+  }
+  70% {
+    transform: translateX(-1.5px);
+  }
 }
 
 @keyframes nudge-even {
-  20% { transform: translateX(-3px); }
-  45% { transform: translateX(3px); }
-  70% { transform: translateX(-1.5px); }
+  20% {
+    transform: translateX(-3px);
+  }
+  45% {
+    transform: translateX(3px);
+  }
+  70% {
+    transform: translateX(-1.5px);
+  }
 }
 
 /* Wrong code: the whole field shakes once, like a head shake, easing out. */
@@ -113,12 +125,24 @@
 }
 
 @keyframes shake {
-  12% { transform: translateX(-8px); }
-  28% { transform: translateX(7px); }
-  44% { transform: translateX(-5px); }
-  60% { transform: translateX(3px); }
-  76% { transform: translateX(-1.5px); }
-  90% { transform: translateX(0.5px); }
+  12% {
+    transform: translateX(-8px);
+  }
+  28% {
+    transform: translateX(7px);
+  }
+  44% {
+    transform: translateX(-5px);
+  }
+  60% {
+    transform: translateX(3px);
+  }
+  76% {
+    transform: translateX(-1.5px);
+  }
+  90% {
+    transform: translateX(0.5px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
