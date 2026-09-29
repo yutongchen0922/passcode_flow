@@ -181,11 +181,18 @@ export function passcodeReducer(state: PasscodeState, action: PasscodeAction): P
   }
 }
 
-/**
- * What the screen renders for a given state. `instant` comes from the hook, which knows
- * whether the latest key was held or typed in quick succession.
- */
-export function selectView(state: PasscodeState, instant = false): PasscodeView {
+type ViewContext = {
+  /** The latest key was held or typed in quick succession (known to the hook, not here). */
+  instant?: boolean;
+  /** What to offer as a hint once a code has been rejected. */
+  hint?: string;
+};
+
+/** What the screen renders for a given state. */
+export function selectView(
+  state: PasscodeState,
+  { instant = false, hint }: ViewContext = {},
+): PasscodeView {
   const editing = state.phase === 'editing';
   const status: StatusKind | null = editing ? (state.showError ? 'error' : null) : state.phase;
   const tile: TileMode = !editing ? 'wrap' : state.engaged ? 'active' : 'hidden';
@@ -199,6 +206,6 @@ export function selectView(state: PasscodeState, instant = false): PasscodeView 
     tile,
     motion,
     nudge: state.nudge,
-    hintVisible: state.failures > 0,
+    hint: state.failures > 0 ? (hint ?? null) : null,
   };
 }

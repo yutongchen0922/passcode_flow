@@ -50,6 +50,7 @@ export function PasscodeField({
       ))}
       <div
         className={styles.tile}
+        data-testid="focus-tile"
         data-index={tileIndex}
         data-mode={tile}
         data-motion={motion}

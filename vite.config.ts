@@ -14,6 +14,10 @@ export default defineConfig(({ command }) => ({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    css: { modules: { classNameStrategy: 'non-scoped' } },
+    css: {
+      // Let tokens.css through as text for the timing contract test (timing.test.ts).
+      include: [/tokens\.css/],
+      modules: { classNameStrategy: 'non-scoped' },
+    },
   },
 }));

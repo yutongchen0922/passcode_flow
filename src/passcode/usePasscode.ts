@@ -1,6 +1,7 @@
 import {
   useEffect,
   useLayoutEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
@@ -10,8 +11,8 @@ import {
 import { AUTO_SUBMIT_DELAY_MS, ERROR_HOLD_MS, RAPID_KEY_MS } from './config';
 import { keyToAction } from './input';
 import { initialState, isComplete, passcodeReducer, selectView } from './machine';
-import type { CellInputProps } from './types';
-import { verifyPasscode } from './verify';
+import { CODE_LENGTH, type CellInputProps } from './types';
+import { CORRECT_PASSCODE, verifyPasscode } from './verify';
 
 /**
  * Connects the pure state machine to the DOM and to time:
@@ -21,6 +22,14 @@ export function usePasscode() {
   const [state, dispatch] = useReducer(passcodeReducer, initialState);
   const { phase, digits, focusIndex, engaged } = state;
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  // One stable ref callback per cell, so React doesn't detach and re-attach them every render.
+  const inputRefs = useMemo(
+    () =>
+      Array.from({ length: CODE_LENGTH }, (_, index) => (element: HTMLInputElement | null) => {
+        inputs.current[index] = element;
+      }),
+    [],
+  );
   const [instant, setInstant] = useState(false);
   const lastKeyAt = useRef(-Infinity);
 
@@ -36,11 +45,16 @@ export function usePasscode() {
     dispatch(action);
   }
 
-  // Animations come back as soon as the keys are released.
+  // Animations come back as soon as the keys are released, or if the window loses focus
+  // mid-press (it would never see the key-up).
   useEffect(() => {
-    const onKeyUp = () => setInstant(false);
-    window.addEventListener('keyup', onKeyUp);
-    return () => window.removeEventListener('keyup', onKeyUp);
+    const endBurst = () => setInstant(false);
+    window.addEventListener('keyup', endBurst);
+    window.addEventListener('blur', endBurst);
+    return () => {
+      window.removeEventListener('keyup', endBurst);
+      window.removeEventListener('blur', endBurst);
+    };
   }, []);
 
   // Keep DOM focus on the state's focus cell. Key events flush synchronously, so this runs
@@ -90,9 +104,7 @@ export function usePasscode() {
 
   function getInputProps(index: number): CellInputProps {
     return {
-      ref: (element: HTMLInputElement | null) => {
-        inputs.current[index] = element;
-      },
+      ref: inputRefs[index],
       // One tab stop for the whole field (roving tabindex); arrows move between cells.
       tabIndex: index === focusIndex ? 0 : -1,
       // Locked while verifying and after success. A wrong code can be typed over.
@@ -130,5 +142,8 @@ export function usePasscode() {
     dispatch({ type: 'focus', index: focusIndex });
   }
 
-  return { view: selectView(state, instant), getInputProps, onFieldBlur, onScreenPress };
+  // The hint is a reviewer convenience: the mock knows the answer, so it can offer it.
+  const view = selectView(state, { instant, hint: CORRECT_PASSCODE });
+
+  return { view, getInputProps, onFieldBlur, onScreenPress };
 }

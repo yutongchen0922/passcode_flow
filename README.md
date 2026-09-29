@@ -23,6 +23,7 @@ Open <http://localhost:5173> and start typing. You can also click anywhere on th
 | `npm run dev`        | Dev server at `localhost:5173`                                                    |
 | `npm test`           | Unit and interaction tests (Vitest + Testing Library)                             |
 | `npm run typecheck`  | TypeScript, strict                                                                |
+| `npm run lint`       | ESLint: TypeScript and React hooks rules                                          |
 | `npm run build`      | Type-check and production build to `dist/`                                        |
 | `npm run preview`    | Serve the production build                                                        |
 | `npm run pixel-diff` | Compare each screen with the Figma frames (see [Pixel fidelity](#pixel-fidelity)) |
@@ -31,6 +32,9 @@ Open <http://localhost:5173> and start typing. You can also click anywhere on th
 
 - **`1234`**: "Verifying..." for 2 seconds, then "Authenticated". Reload to start again.
 - **Any other code**: the field turns red and shakes, then clears, and the passcode appears as faint ghost digits to type over.
+
+Review switches, on the dev server only (production builds ignore them):
+
 - **`?slowmo`**, e.g. `localhost:5173/?slowmo`: every transition at 1/5 speed.
 - **`?preview=<state>`**: static screens.
   - Figma frames: `empty`, `filling`, `verifying`, `authenticated`
@@ -92,7 +96,7 @@ letterforms changing.
   - ⌥⌫ / ⌘⌫ clears the whole code, with the same closing motion as the error.
 - **The error state and hint aren't in Figma.**
   - They reuse the existing tokens plus one red, `#b42318`, on the cell strokes only.
-  - The hint is the passcode as ghost digits (`#c2c2c2`) in the empty cells, exactly where each digit will land. It needs no extra line of text, and typing simply replaces it.
+  - The hint is the passcode as ghost digits (`#c2c2c2`) in the empty cells, exactly where each digit will land. It needs no extra line of text, and typing simply replaces it: the typed digit appears solid at once, with no fade-in, so the ghost never seems to linger.
   - It shows only after a wrong code, so the four Figma states stay untouched. Screen readers get it as a sentence.
 - **Status messages fade before they swap.** "Verifying..." and "Authenticated" rows differ in width by 41 px. Swapping only while nothing is visible means nothing is seen to jump sideways.
 
@@ -142,8 +146,9 @@ src/
     StatusRow.tsx          Icon + label, fading out before swapping
     *.module.css           One stylesheet per component; states via data-* attributes
     icons.tsx              Spinner and check drawn inline with Figma's geometry, so parts animate
-    __tests__/             Machine, key mapping, and one test per rule
+    __tests__/             Machine, key mapping, timing contract, and one test per rule
   preview/Preview.tsx      Static screens for ?preview= and the pixel diff
+  devFlags.ts              The review switches (?preview, ?still, ?slowmo), dev server only
 scripts/pixel-diff.mjs     Figma comparison
 design/figma/              Figma frame exports used by the pixel diff
 ```
@@ -156,7 +161,7 @@ design/figma/              Figma frame exports used by the pixel diff
 
 - **Inputs:** each is labelled "Digit n of 4", opens the numeric keyboard on mobile, and supports one-time-code autofill.
 - **Screen readers:**
-  - The status message is announced (`aria-live`).
+  - The status message is announced (a `role="status"` live region).
   - Inputs are marked `aria-invalid` on a wrong code.
   - The hint is announced as a sentence when it appears; the ghost digits are visual only.
 - **Reduced motion** replaces the glides, shake, wrap, breathing and bloom with fades. The spinner still turns.
@@ -168,4 +173,5 @@ design/figma/              Figma frame exports used by the pixel diff
 - **The hint gives away the passcode.** It's there so reviewers can reach the success state; a real product wouldn't do this.
 - **Very narrow screens.** The layout is Figma's fixed 336 px field, so it fits phones from 368 px wide. The oldest 320 px phones clip the edges.
 - **Built for four digits.** The styles give each cell its own edges, to match Figma's dividers exactly, so they assume four cells. The code length itself is one constant, `CODE_LENGTH`.
+- **Springs need a recent browser.** Safari before 17.2 has no CSS `linear()` easing, so there the success glide and bloom fall back to a plain ease-out.
 - **No restart after success.** Reload to start again; the Figma frame has no reset control.

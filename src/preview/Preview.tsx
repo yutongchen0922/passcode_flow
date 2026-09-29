@@ -12,7 +12,7 @@ const BASE: PasscodeView = {
   tile: 'hidden',
   motion: 'default',
   nudge: 0,
-  hintVisible: false,
+  hint: null,
 };
 
 /**
@@ -31,14 +31,14 @@ export const PREVIEW_STATES = {
     status: 'error',
     digits: ['5', '5', '5', '5'],
     tile: 'wrap',
-    hintVisible: true,
+    hint: '1234',
   },
-  'error-cleared': { status: 'error', tile: 'active', hintVisible: true },
+  'error-cleared': { status: 'error', tile: 'active', hint: '1234' },
   'error-retyping': {
     digits: ['1', '2', '', ''],
     tileIndex: 2,
     tile: 'active',
-    hintVisible: true,
+    hint: '1234',
   },
 } satisfies Record<string, Partial<PasscodeView>>;
 

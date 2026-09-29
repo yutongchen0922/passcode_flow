@@ -49,14 +49,12 @@
   --motion-scale: 1;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* glides that settle softly */
   --ease-in: cubic-bezier(0.4, 0, 1, 1); /* exits */
-  /* Springs, as CSS linear() curves: a glide that overshoots ~4% and settles, and a livelier
-     bloom (~8%) for the check. */
-  --ease-spring: linear(0, 0.22 6%, 0.56 13%, 0.83 20%, 0.97 27%, 1.03 34%, 1.045 40%, 1.03 49%,
-      1.01 58%, 0.998 70%, 1);
-  --ease-bloom: linear(0, 0.35 8%, 0.75 18%, 1.02 30%, 1.08 38%, 1.05 50%, 1 64%, 0.995 78%, 1);
+  /* Springs: plain ease-out here, replaced by real spring curves below where supported. */
+  --ease-spring: var(--ease-out);
+  --ease-bloom: var(--ease-out);
   --dur-tile: calc(140ms * var(--motion-scale)); /* tile glide; short enough for held Backspace */
   --dur-digit: calc(160ms * var(--motion-scale)); /* digit coming into focus */
-  --dur-fade: calc(150ms * var(--motion-scale)); /* things leaving; = STATUS_FADE_OUT_MS */
+  --dur-fade: calc(150ms * var(--motion-scale)); /* things leaving; = STATUS_FADE_OUT_MS (tested) */
   --dur-tone: calc(200ms * var(--motion-scale)); /* cell colour changes, status row entering */
   --dur-nudge: calc(280ms * var(--motion-scale)); /* tile wiggle on a rejected key */
   --dur-spin: calc(2.8s * var(--motion-scale)); /* one slow spinner revolution */
@@ -68,7 +66,7 @@
   --delay-bloom: calc(80ms * var(--motion-scale)); /* …just after the spinner has exhaled */
   --dur-tick: calc(260ms * var(--motion-scale)); /* then the tick draws in */
   --delay-tick: calc(220ms * var(--motion-scale)); /* close behind the bloom, never an empty box for long */
-  --dur-shake: calc(420ms * var(--motion-scale)); /* wrong code; inside ERROR_HOLD_MS */
+  --dur-shake: calc(420ms * var(--motion-scale)); /* wrong code; ≤ ERROR_HOLD_MS (tested) */
   --dur-wrap: calc(260ms * var(--motion-scale)); /* tile opening out around the whole code */
   --delay-wrap-fade: calc(180ms * var(--motion-scale)); /* …before it fades away */
   --blur-swap: 4px; /* softens text as it fades in or out */
@@ -76,6 +74,30 @@
      and each digit fades as the tile reaches it. */
   --stagger-rewind: calc(80ms * var(--motion-scale));
   --dur-rewind: calc(var(--stagger-rewind) * 3);
+}
+
+/*
+ * Springs as CSS linear() curves: a glide that overshoots ~4% and settles, and a livelier
+ * bloom (~8%) for the check. Browsers without linear() (Safari < 17.2) would drop any
+ * transition using it and snap, so they keep the ease-out defaults above instead.
+ */
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-spring: linear(
+      0,
+      0.22 6%,
+      0.56 13%,
+      0.83 20%,
+      0.97 27%,
+      1.03 34%,
+      1.045 40%,
+      1.03 49%,
+      1.01 58%,
+      0.998 70%,
+      1
+    );
+    --ease-bloom: linear(0, 0.35 8%, 0.75 18%, 1.02 30%, 1.08 38%, 1.05 50%, 1 64%, 0.995 78%, 1);
+  }
 }
 
 :root[data-slowmo] {

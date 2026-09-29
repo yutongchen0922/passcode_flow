@@ -33,8 +33,8 @@ export type PasscodeView = {
   motion: Motion;
   /** Changes on a rejected keystroke or early Enter; each change plays a small wiggle. */
   nudge: number;
-  /** After the first wrong code, empty cells show the passcode as faint ghost digits. */
-  hintVisible: boolean;
+  /** After the first wrong code, the passcode to show as ghost digits in the empty cells. */
+  hint: string | null;
 };
 
 /** Behaviour a cell's input receives from usePasscode. */

@@ -115,14 +115,15 @@ describe('submission', () => {
     expect(run([{ type: 'submit' }], wrong()).phase).toBe('error');
   });
 
-  it('shows the hint only after a wrong code, and keeps it', () => {
-    expect(selectView(typed('1234')).hintVisible).toBe(false);
-    expect(selectView(wrong()).hintVisible).toBe(true);
+  it('offers the hint only after a wrong code, and keeps it', () => {
+    const context = { hint: '1234' };
+    expect(selectView(typed('1234'), context).hint).toBeNull();
+    expect(selectView(wrong(), context).hint).toBe('1234');
     const retyping = run(
       [{ type: 'dismissError' }, { type: 'input', index: 0, text: '1' }],
       wrong(),
     );
-    expect(selectView(retyping).hintVisible).toBe(true);
+    expect(selectView(retyping, context).hint).toBe('1234');
   });
 
   it('rewinds on a clear-all until the next edit', () => {
@@ -148,7 +149,9 @@ describe('selectView', () => {
 
   it('animates by default, instantly for rapid keys, and rewinds on a clear-all', () => {
     expect(selectView(typed('1')).motion).toBe('default');
-    expect(selectView(typed('1'), true).motion).toBe('instant');
-    expect(selectView(run([{ type: 'clear' }], typed('1')), true).motion).toBe('rewind');
+    expect(selectView(typed('1'), { instant: true }).motion).toBe('instant');
+    expect(selectView(run([{ type: 'clear' }], typed('1')), { instant: true }).motion).toBe(
+      'rewind',
+    );
   });
 });

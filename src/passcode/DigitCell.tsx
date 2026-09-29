@@ -17,12 +17,19 @@ type DigitCellProps = {
  * the input on top is transparent and only handles focus and typing.
  */
 export function DigitCell({ index, digit, ghost, tone, motion, inputProps }: DigitCellProps) {
-  const glyph = useGlyph(digit, motion !== 'instant');
+  // Over a ghost the digit appears solid at once: the ghost already showed its shape there,
+  // so a fade-in would read as the ghost lingering.
+  const glyph = useGlyph(digit, motion !== 'instant' && !ghost);
 
   return (
     <div className={styles.cell} data-index={index} data-tone={tone} data-motion={motion}>
       {ghost && (
-        <span className={styles.ghost} data-visible={!digit} aria-hidden="true">
+        <span
+          className={styles.ghost}
+          data-testid="ghost"
+          data-visible={!digit}
+          aria-hidden="true"
+        >
           {ghost}
         </span>
       )}
@@ -53,9 +60,13 @@ export function DigitCell({ index, digit, ghost, tone, motion, inputProps }: Dig
 
 /**
  * What the glyph shows. A cleared digit stays in the DOM (unfilled) so it can fade out, and
- * each newly typed digit gets a fresh key so it can pop in. Whether it pops is decided when
- * it appears, so digits typed in a burst don't all pop later when the keys are released.
- * Digits present on first render appear without animation.
+ * each newly typed digit gets a fresh key so it can animate in. Whether it animates is decided
+ * when it appears, so digits typed in a burst don't all animate later when the keys are
+ * released. Digits present on first render appear without animation.
+ *
+ * The state is adjusted during render (React's documented pattern for deriving state from a
+ * changed prop) rather than in an effect, so the outgoing digit is still in the DOM on the very
+ * frame its fade-out starts.
  */
 function useGlyph(digit: string, animate: boolean) {
   const [glyph, setGlyph] = useState({ text: digit, filled: digit !== '', key: 0, pop: false });

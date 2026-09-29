@@ -105,7 +105,10 @@ describe('Rules 2 & 4 · simulated verification of 1234', () => {
   it('hints the passcode as ghost digits in the empty cells after a wrong attempt', async () => {
     const { user } = setup();
     const ghosts = () =>
-      [...document.querySelectorAll('[data-visible="true"]')].map((el) => el.textContent);
+      screen
+        .queryAllByTestId('ghost')
+        .filter((ghost) => ghost.dataset.visible === 'true')
+        .map((ghost) => ghost.textContent);
     expect(ghosts()).toEqual([]);
 
     await user.keyboard('1111{Enter}');
@@ -212,7 +215,7 @@ describe('Rule 9 · holding Backspace', () => {
 
   it('skips the animations while the key is held, and restores them on release', async () => {
     const { user } = setup();
-    const motion = () => document.querySelector('[data-mode]')?.getAttribute('data-motion');
+    const motion = () => screen.getByTestId('focus-tile').dataset.motion;
     await user.keyboard('123');
     await user.keyboard('{Backspace>3}');
     expect(motion()).toBe('instant');
@@ -232,7 +235,7 @@ describe('Focus', () => {
 
   it('activates the field on a click anywhere on the page', async () => {
     const { user, values, focused } = setup();
-    const tile = () => document.querySelector('[data-mode]')?.getAttribute('data-mode');
+    const tile = () => screen.getByTestId('focus-tile').dataset.mode;
     expect(tile()).toBe('hidden');
 
     await user.click(screen.getByRole('main'));

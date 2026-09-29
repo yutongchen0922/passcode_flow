@@ -140,7 +140,12 @@
   transition-delay: 0s, var(--clear-delay), var(--clear-delay), var(--clear-delay);
 }
 
-.cell[data-motion='rewind'] .ghost {
+/*
+ * The delay is on the appearing state only. If it applied to the ghost in general, a digit
+ * typed during the rewind would hide the ghost with this delay too, leaving it under the
+ * new digit for up to ~400ms.
+ */
+.cell[data-motion='rewind'] .ghost[data-visible='true'] {
   transition-delay: calc(var(--clear-delay) + var(--dur-fade));
 }
 
