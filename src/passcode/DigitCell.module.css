@@ -1,0 +1,96 @@
+/*
+ * Layering inside the field (see PasscodeField.module.css):
+ *   cell background + stroke  →  focus tile (z 1)  →  glyph (z 2)  →  input (z 3)
+ * Cells stay position: relative with no z-index so the glyph and input join the
+ * field's stacking context and can sit above the tile.
+ */
+.cell {
+  --cell-fill: var(--fill);
+  --cell-stroke: var(--border);
+  --glyph-color: var(--text-color-1);
+
+  position: relative;
+  flex: none;
+  width: var(--cell-width);
+  height: var(--cell-height);
+  background: var(--cell-fill);
+}
+
+.cell[data-tone='disabled'] {
+  --cell-fill: var(--fill-disabled);
+  --cell-stroke: var(--border-disabled);
+  --glyph-color: var(--text-color-disabled);
+}
+
+/*
+ * Stroke drawn as an overlay rather than a border, so the cell's content box never changes
+ * size and the glyph sits in the same place in every cell.
+ * The per-cell edges match Figma exactly: dividers at 83px, 167px and 252px.
+ */
+.cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 0 solid var(--cell-stroke);
+  border-block-width: var(--stroke);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.cell[data-index='0'] {
+  border-start-start-radius: var(--field-radius);
+  border-end-start-radius: var(--field-radius);
+}
+
+.cell[data-index='0']::before,
+.cell[data-index='3']::before {
+  border-inline-width: var(--stroke);
+}
+
+.cell[data-index='1']::before {
+  border-inline-end-width: var(--stroke);
+}
+
+.cell[data-index='3'] {
+  border-start-end-radius: var(--field-radius);
+  border-end-end-radius: var(--field-radius);
+}
+
+.glyph {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  top: var(--digit-offset-top);
+  translate: var(--digit-offset-x) 0;
+  color: var(--glyph-color);
+  font: var(--font-weight-medium) var(--text-digit-size) / normal var(--font-sans);
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.input {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  /* ≥16px stops iOS Safari zooming in on focus. */
+  font-size: var(--text-digit-size);
+  text-align: center;
+  outline: none;
+  appearance: none;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.input::selection {
+  background: transparent;
+}

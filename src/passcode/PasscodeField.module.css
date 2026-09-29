@@ -1,0 +1,58 @@
+.field {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: calc(var(--cell-width) * 4);
+}
+
+/*
+ * The focus tile: one element that moves between cells rather than a style on each cell,
+ * so it can glide from one to the next.
+ */
+.tile {
+  --tile-index: 0;
+
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: var(--cell-width);
+  height: var(--cell-height);
+  border: var(--tile-stroke) solid var(--highlight);
+  border-radius: var(--tile-radius);
+  background: var(--fill);
+  box-shadow: var(--tile-shadow);
+  transform: translateX(calc(var(--cell-width) * var(--tile-index)));
+  pointer-events: none;
+}
+
+.tile[data-visible='false'] {
+  opacity: 0;
+}
+
+.tile[data-index='1'] {
+  --tile-index: 1;
+}
+
+.tile[data-index='2'] {
+  --tile-index: 2;
+}
+
+.tile[data-index='3'] {
+  --tile-index: 3;
+}
+
+/*
+ * In Figma the next cell is drawn above the focused one, so the shadow shows over the
+ * previous cell but not the next. Clip the shadow where the next cell would cover it.
+ */
+.tile:not([data-index='3']) {
+  clip-path: polygon(
+    -10px -10px,
+    100% -10px,
+    100% 100%,
+    calc(100% + 10px) 100%,
+    calc(100% + 10px) calc(100% + 10px),
+    -10px calc(100% + 10px)
+  );
+}

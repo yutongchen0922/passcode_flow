@@ -1,0 +1,42 @@
+/*
+ * Design tokens.
+ *
+ * Section 1 mirrors the Figma variables 1:1 (same names), so any value can be traced back
+ * to the file. Everything below it is measured from the Figma frames or, where marked
+ * "not in Figma", a decision made for states the design doesn't cover.
+ */
+:root {
+  /* 1. Figma variables */
+  --background: #ffffff;
+  --fill: #fafafa;
+  --border: #e4e4e4;
+  --highlight: #107a4d;
+  --text-color-1: #323232;
+  --fill-disabled: #f3f2f2;
+  --border-disabled: #e4e4e4;
+  --text-color-disabled: #858585;
+
+  /* 2. Colour — not in Figma */
+  --danger: #b42318;
+
+  /* 3. Type */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-weight-medium: 500;
+  --text-digit-size: 36px;
+  --text-status-size: 24px;
+
+  /* 4. Geometry */
+  --cell-width: 84px;
+  --cell-height: 128px;
+  --field-radius: 16px;
+  --stroke: 1px;
+  --tile-stroke: 3px;
+  --tile-radius: 4px;
+  --tile-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+  --digit-offset-x: 1.5px; /* Figma places digits 1.5px right of centre (measured) */
+  --digit-offset-top: 44px; /* digit text box top, measured from the cell's outer edge */
+  --icon-size: 32px;
+  --status-icon-gap: 8px;
+  --status-gap: 16px; /* status row → field */
+  --status-label-offset-y: -1px; /* Chrome rounds the label baseline 1px lower than Figma */
+}

@@ -1,0 +1,38 @@
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  /* Inter 3.x (from @fontsource/inter@4.5.15), the version Figma renders with: Inter 4
+     changes several advance widths, so text drifts up to 3px from the design.
+     Preloaded in index.html; `block` avoids a flash of the fallback font. */
+  font-display: block;
+  src: url('/fonts/inter-v3-latin-500.woff2') format('woff2');
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+/* `?still` (used by scripts/pixel-diff.mjs) freezes motion so screenshots are deterministic. */
+:root[data-still] *,
+:root[data-still] *::before,
+:root[data-still] *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-color-1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

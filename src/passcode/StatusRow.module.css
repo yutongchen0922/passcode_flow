@@ -1,0 +1,39 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--status-icon-gap);
+  height: var(--icon-size);
+  color: var(--text-color-1);
+  font: var(--font-weight-medium) var(--text-status-size) / normal var(--font-sans);
+  white-space: nowrap;
+}
+
+.icon {
+  position: relative;
+  flex: none;
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.icon img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* All eight spokes are identical, so it has to turn continuously; stepping by 45° would look frozen. */
+.row[data-status='verifying'] .icon img {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.label {
+  translate: 0 var(--status-label-offset-y, 0);
+}

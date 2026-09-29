@@ -1,0 +1,29 @@
+.screen {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Sized to the field; the status row is positioned against it so it never shifts the field. */
+.stage {
+  position: relative;
+}
+
+.status {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(-1 * (var(--status-gap) + var(--icon-size)));
+  display: flex;
+  justify-content: center;
+}
+
+/* Success: the field is gone and the row sits at the field's vertical centre (Figma: y 475). */
+.screen[data-phase='success'] .status {
+  transform: translateY(calc(var(--status-gap) + var(--cell-height) / 2 + var(--icon-size) / 2));
+}
+
+.screen[data-phase='success'] .field {
+  opacity: 0;
+  visibility: hidden;
+}
