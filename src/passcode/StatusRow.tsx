@@ -24,7 +24,11 @@ export function StatusRow({ status }: StatusRowProps) {
 
   return (
     <div className={styles.row} data-status={status}>
-      <span className={styles.icon}>{icon && <img src={icon} alt="" width={32} height={32} />}</span>
+      {icon && (
+        <span className={styles.icon}>
+          <img src={icon} alt="" width={32} height={32} />
+        </span>
+      )}
       <span className={styles.label}>{LABELS[status]}</span>
     </div>
   );

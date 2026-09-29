@@ -1,6 +1,7 @@
+import type { FocusEventHandler, MouseEventHandler } from 'react';
 import { PasscodeField } from './PasscodeField';
 import { StatusRow } from './StatusRow';
-import type { CellTone, Phase, StatusKind } from './types';
+import type { CellInputProps, CellTone, Phase, StatusKind } from './types';
 import styles from './PasscodeScreen.module.css';
 
 const TONE: Record<Phase, CellTone> = {
@@ -10,28 +11,35 @@ const TONE: Record<Phase, CellTone> = {
   success: 'disabled',
 };
 
-const STATUS: Record<Phase, StatusKind | null> = {
-  editing: null,
-  verifying: 'verifying',
-  error: 'error',
-  success: 'success',
-};
+const readOnlyInput = (): CellInputProps => ({ readOnly: true, tabIndex: -1 });
 
 type PasscodeScreenProps = {
   phase: Phase;
+  status: StatusKind | null;
   digits: readonly string[];
   activeIndex: number | null;
+  /** Omitted for static previews, which render read-only cells. */
+  getInputProps?: (index: number) => CellInputProps;
+  onFieldBlur?: FocusEventHandler<HTMLDivElement>;
+  /** A press anywhere on the screen, used to activate the field. */
+  onScreenPress?: MouseEventHandler<HTMLElement>;
 };
 
 /**
  * Centres the passcode field in the viewport and places the status row 16px above it.
  * On success the field fades away and the row moves down to the centre.
  */
-export function PasscodeScreen({ phase, digits, activeIndex }: PasscodeScreenProps) {
-  const status = STATUS[phase];
-
+export function PasscodeScreen({
+  phase,
+  status,
+  digits,
+  activeIndex,
+  getInputProps = readOnlyInput,
+  onFieldBlur,
+  onScreenPress,
+}: PasscodeScreenProps) {
   return (
-    <main className={styles.screen} data-phase={phase}>
+    <main className={styles.screen} data-phase={phase} onMouseDown={onScreenPress}>
       <div className={styles.stage}>
         <div className={styles.status} role="status" aria-live="polite">
           {status && <StatusRow status={status} />}
@@ -41,7 +49,8 @@ export function PasscodeScreen({ phase, digits, activeIndex }: PasscodeScreenPro
             digits={digits}
             activeIndex={activeIndex}
             tone={TONE[phase]}
-            readOnly={phase !== 'editing'}
+            getInputProps={getInputProps}
+            onBlur={onFieldBlur}
           />
         </div>
       </div>

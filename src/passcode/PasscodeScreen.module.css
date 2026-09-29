@@ -1,13 +1,22 @@
 .screen {
-  display: grid;
-  place-items: center;
+  position: relative;
   min-height: 100vh;
   min-height: 100dvh;
 }
 
-/* Sized to the field; the status row is positioned against it so it never shifts the field. */
+/*
+ * Centred in the viewport as in the Figma frame, but rounded down to whole pixels: plain
+ * centring lands on a half pixel whenever (viewport − field) is odd, which blurs the 1px
+ * strokes on non-retina screens. The status row is positioned against this box, so it never
+ * shifts the field.
+ */
 .stage {
-  position: relative;
+  position: absolute;
+  left: calc(50% - var(--field-width) / 2);
+  left: round(down, 50% - var(--field-width) / 2, 1px);
+  top: calc(50% - var(--cell-height) / 2);
+  top: max(var(--status-gap) + var(--icon-size), round(down, 50% - var(--cell-height) / 2, 1px));
+  width: var(--field-width);
 }
 
 .status {

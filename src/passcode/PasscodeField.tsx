@@ -1,5 +1,6 @@
+import type { FocusEventHandler } from 'react';
 import { DigitCell } from './DigitCell';
-import type { CellTone } from './types';
+import type { CellInputProps, CellTone } from './types';
 import styles from './PasscodeField.module.css';
 
 type PasscodeFieldProps = {
@@ -7,14 +8,15 @@ type PasscodeFieldProps = {
   /** Cell the focus tile sits on, or `null` to hide it. */
   activeIndex: number | null;
   tone: CellTone;
-  readOnly: boolean;
+  getInputProps: (index: number) => CellInputProps;
+  onBlur?: FocusEventHandler<HTMLDivElement>;
 };
 
-export function PasscodeField({ digits, activeIndex, tone, readOnly }: PasscodeFieldProps) {
+export function PasscodeField({ digits, activeIndex, tone, getInputProps, onBlur }: PasscodeFieldProps) {
   return (
-    <div className={styles.field} role="group" aria-label="Passcode">
+    <div className={styles.field} role="group" aria-label="Passcode" onBlur={onBlur}>
       {digits.map((digit, index) => (
-        <DigitCell key={index} index={index} digit={digit} tone={tone} readOnly={readOnly} />
+        <DigitCell key={index} index={index} digit={digit} tone={tone} inputProps={getInputProps(index)} />
       ))}
       <div
         className={styles.tile}

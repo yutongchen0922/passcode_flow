@@ -28,6 +28,7 @@
   /* 4. Geometry */
   --cell-width: 84px;
   --cell-height: 128px;
+  --field-width: calc(var(--cell-width) * 4);
   --field-radius: 16px;
   --stroke: 1px;
   --tile-stroke: 3px;

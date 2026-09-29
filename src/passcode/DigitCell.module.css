@@ -87,8 +87,12 @@
   text-align: center;
   outline: none;
   appearance: none;
-  cursor: default;
+  cursor: text;
   -webkit-tap-highlight-color: transparent;
+}
+
+.input:read-only {
+  cursor: default;
 }
 
 .input::selection {

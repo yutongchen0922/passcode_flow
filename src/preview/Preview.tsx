@@ -1,21 +1,25 @@
 import { PasscodeScreen } from '../passcode/PasscodeScreen';
-import type { Phase } from '../passcode/types';
+import type { Phase, StatusKind } from '../passcode/types';
 
 type PreviewState = {
   phase: Phase;
+  status: StatusKind | null;
   digits: readonly string[];
   activeIndex: number | null;
 };
 
 /**
- * Each Figma frame as a static screen, for side-by-side review and `npm run pixel-diff`.
- * Open with `?preview=<name>`.
+ * Static screens for review, opened with `?preview=<name>`. The first four are the Figma
+ * frames checked by `npm run pixel-diff`; the rest are states Figma doesn't show.
  */
 export const PREVIEW_STATES = {
-  empty: { phase: 'editing', digits: ['', '', '', ''], activeIndex: null },
-  filling: { phase: 'editing', digits: ['1', '2', '2', ''], activeIndex: 2 },
-  verifying: { phase: 'verifying', digits: ['1', '2', '3', '4'], activeIndex: null },
-  authenticated: { phase: 'success', digits: ['1', '2', '3', '4'], activeIndex: null },
+  empty: { phase: 'editing', status: null, digits: ['', '', '', ''], activeIndex: null },
+  filling: { phase: 'editing', status: null, digits: ['1', '2', '2', ''], activeIndex: 2 },
+  verifying: { phase: 'verifying', status: 'verifying', digits: ['1', '2', '3', '4'], activeIndex: null },
+  authenticated: { phase: 'success', status: 'success', digits: ['1', '2', '3', '4'], activeIndex: null },
+  'tile-first': { phase: 'editing', status: null, digits: ['', '', '', ''], activeIndex: 0 },
+  'tile-last': { phase: 'editing', status: null, digits: ['1', '2', '3', '4'], activeIndex: 3 },
+  error: { phase: 'editing', status: 'error', digits: ['', '', '', ''], activeIndex: 0 },
 } satisfies Record<string, PreviewState>;
 
 export type PreviewName = keyof typeof PREVIEW_STATES;

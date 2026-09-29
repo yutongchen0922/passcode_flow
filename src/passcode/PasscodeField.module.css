@@ -2,7 +2,7 @@
   position: relative;
   isolation: isolate;
   display: flex;
-  width: calc(var(--cell-width) * 4);
+  width: var(--field-width);
 }
 
 /*
@@ -30,6 +30,12 @@
   opacity: 0;
 }
 
+/* On the end cells the tile follows the field's rounded outer corners. */
+.tile[data-index='0'] {
+  border-start-start-radius: var(--field-radius);
+  border-end-start-radius: var(--field-radius);
+}
+
 .tile[data-index='1'] {
   --tile-index: 1;
 }
@@ -40,6 +46,9 @@
 
 .tile[data-index='3'] {
   --tile-index: 3;
+
+  border-start-end-radius: var(--field-radius);
+  border-end-end-radius: var(--field-radius);
 }
 
 /*
